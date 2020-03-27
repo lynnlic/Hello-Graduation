@@ -1,0 +1,46 @@
+@login-image:'../../images/login-bg.png';
+@login-width:400px;
+@login-height:400px;
+
+
+.login-frame{
+    width: @login-width;
+    height: @login-height;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    top: 20%;
+    right: 30%;
+    position: absolute;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+.login-frame:hover{
+    box-shadow: 0px 15px 30px rgba(1, 1, 1, 0.8);
+    width: @login-width * 1;
+    height: @login-height *1;
+}
+
+.login-text{
+    margin-bottom: 20px;
+    margin-left: 30%;
+    font-size: 20px;
+}
+
+.login-frame-bg-image {
+    background-image:url('@{login-image}');
+    background-repeat: no-repeat;
+    background-size: cover; 
+    //filter: blur(10px);
+    z-index: 1000;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+.login-form-input, .login-form-buttom{
+    width:100%;
+}
