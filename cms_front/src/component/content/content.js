@@ -85,12 +85,13 @@ class Content extends Component{
                 <Navigation 
                     text='内容管理'
                 />
-                <div className="search_form_frame">
+     
                     <Form
                         name="search_form"
                         onFinish={onFinish}
                         onFinishFailed={onFinishFailed}
                         layout="inline"
+                        className="common_search_form_frame"
                     >
                         <Form.Item
                             label="内容标题"
@@ -111,16 +112,16 @@ class Content extends Component{
                             <Input />
                         </Form.Item>
                         
-                            <Button type="primary" htmlType="submit" className="button_width">
+                            <Button type="primary" htmlType="submit" className="common_button_width">
                                 搜  索
                             </Button>
-                            <Button className="button_width button_add">
+                            <Button className="common_button_width common_button_add">
                                 新  增
                             </Button>
                         
                     </Form>
-                </div>
-                <div className="table_frame">
+     
+                <div className="common_table_frame">
                     <Table 
                         bordered 
                         columns={columns} 
