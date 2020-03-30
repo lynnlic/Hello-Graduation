@@ -4,8 +4,12 @@ import 'es6-promise/dist/es6-promise.min.js';
 import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
-export function getAllUser(){
-    return(myfetch('/user/getAllUser', 'GET'))
+/**
+ * currentPage:当前页,
+ * number:每页多少条
+ */
+export function getAllUser(currentPage=1, number=10){
+    return(myfetch('/user/getAllUser?currentPage='+currentPage+'&number='+number, 'GET'))
     .then((res) => {return res.json(); })
     .then((res) => {
         console.log('user',res);

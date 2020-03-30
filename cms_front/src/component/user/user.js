@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Tag} from 'antd';
+import { Form, Input, Button, Table, Tag,Pagination} from 'antd';
 import Navigation from '../../container/navigation.js';
 import {getAllUser} from '../../action/userAction.js';
 require('../../common.less');
@@ -14,18 +14,35 @@ class User extends Component{
     constructor(props){
         super(props);
         this.state={
-            data:[]
+            data:[],
+            current:1,
+            pageSize:5,
+            total:0
         }
     }
 
     componentDidMount(){
-        getAllUser().then((res)=>{
+        getAllUser(this.state.current,this.state.pageSize).then((res)=>{
+            console.log('this---',this)
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
-                code:res.result.code
+                code:res.result.code,
+                total:res.result.total
             })
         })
+    }
+
+    onChangePage=(page,pageSize)=>{
+        getAllUser(page,pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:page
+            })
+        });
     }
 
     render(){
@@ -50,11 +67,17 @@ class User extends Component{
               title: '用户状态',
               key: 'state',
               dataIndex: 'state',
-              render:(text,record)=>(
-                  <span>
-                      
-                  </span>
-              )
+              render:(text,record)=>{
+                  if(record.state==1){
+                    return(
+                        <span>启用</span>
+                    )
+                  } else {
+                    return(
+                        <span>禁用</span>
+                    )
+                  }                  
+              }
             },
             {
               title: '操作',
@@ -67,6 +90,14 @@ class User extends Component{
               ),
             },
           ];
+          const pagination={
+              simple: true,
+              total: this.state.total,
+              size:'small',
+              onChange: this.onChangePage,
+              current: this.state.current,
+              pageSize: this.state.pageSize
+          }
 
         return(
             <div className="common_content_frame">
@@ -104,7 +135,9 @@ class User extends Component{
                         bordered 
                         columns={columns} 
                         dataSource={this.state.data?this.state.data:[]}
+                        pagination={pagination}
                     />  
+                    
                 </div>
             </div>
         )
