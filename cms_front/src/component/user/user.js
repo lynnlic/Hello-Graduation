@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, Table, Tag} from 'antd';
 import Navigation from '../../container/navigation.js';
+import {getAllUser} from '../../action/userAction.js';
 require('../../common.less');
 
 const onFinish = values =>{
@@ -17,8 +18,18 @@ class User extends Component{
         }
     }
 
-    render(){
+    componentDidMount(){
+        getAllUser().then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code
+            })
+        })
+    }
 
+    render(){
+        const dataSource=this.state.data?this.state.data:[];
         const columns = [
             {
               title: '序号',
@@ -39,6 +50,11 @@ class User extends Component{
               title: '用户状态',
               key: 'state',
               dataIndex: 'state',
+              render:(text,record)=>(
+                  <span>
+                      
+                  </span>
+              )
             },
             {
               title: '操作',

@@ -10,6 +10,7 @@ import Home from './component/homepage/homepage.js';
 import User from './component/user/user.js';
 import Site from './component/site/site.js';
 import Template from './component/template/template.js';
+import Page from './component/page/page.js';
 import App from './App.js';
 
 
@@ -20,6 +21,7 @@ export default(
         <Route path='/home/user' component={User} />
         <Route path='/home/site' component={Site} />
         <Route path='/home/template' component={Template} />
+        <Route path='/home/page' component={Page} />
         <Route path='/app' component={App} />
     </Switch>
 )
