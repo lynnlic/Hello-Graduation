@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Tag} from 'antd';
+import { Form, Input, Button, Table} from 'antd';
 import Navigation from '../../container/navigation.js';
 import {getAllData} from '../../action/contentAction.js';
 require('../../common.less');
@@ -16,22 +16,37 @@ class Content extends Component{
         super(props);
         this.state={
             data:[],
-            msg:''
+            msg:'',
+            current:1,
+            pageSize:5,
+            total:0
         }
     }
 
     componentDidMount(){
-        getAllData().then((res)=>{
+        getAllData(this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
-                msg:res.result.msg
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total
             })
         })
     }
 
+    onChangePage=(page,pageSize)=>{
+        getAllData(page,pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:page
+            })
+        });
+    }
+
     render(){
-        const dataSource=this.state.data?this.state.data:[];
-        console.log('dataSource',dataSource)
         const columns = [
             {
               title: '序号',
@@ -79,6 +94,14 @@ class Content extends Component{
               ),
             },
           ];
+          const pagination={
+            simple: true,
+            total: this.state.total,
+            size:'small',
+            onChange: this.onChangePage,
+            current: this.state.current,
+            pageSize: this.state.pageSize,
+        }
 
         return(
             <div className="common_content_frame">
@@ -126,6 +149,7 @@ class Content extends Component{
                         bordered 
                         columns={columns} 
                         dataSource={this.state.data?this.state.data:[]}
+                        pagination={pagination}
                     />  
                 </div>
             </div>

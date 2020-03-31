@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Tag} from 'antd';
+import { Form, Input, Button, Table} from 'antd';
 import Navigation from '../../container/navigation.js';
+import {getAllPage} from '../../action/pageAction.js'
 require('../../common.less');
+require('./page.less');
 
 const onFinish = values =>{
     console.log('values',values);
@@ -13,8 +15,34 @@ class Page extends Component{
     constructor(props){
         super(props);
         this.state={
-            data:[]
+            data:[],
+            current:1,
+            pageSize:5,
+            total:0
         }
+    }
+
+    componentDidMount(){
+        getAllPage(this.state.current,this.state.pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total
+            })
+        })
+    }
+
+    onChangePage=(page,pageSize)=>{
+        getAllPage(page,pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:page
+            })
+        });
     }
 
     render(){
@@ -32,8 +60,8 @@ class Page extends Component{
             },
             {
                 title: '访问路径',
-                dataIndex: 'url',
-                key: 'url',
+                dataIndex: 'fileName',
+                key: 'fileName',
               },
             {
               title: '存储路径',
@@ -72,6 +100,15 @@ class Page extends Component{
             },
           ];
 
+          const pagination={
+            simple: true,
+            total: this.state.total,
+            size:'small',
+            onChange: this.onChangePage,
+            current: this.state.current,
+            pageSize: this.state.pageSize
+        }
+
         return(
             <div className="common_content_frame">
                 <Navigation 
@@ -82,7 +119,7 @@ class Page extends Component{
                         onFinish={onFinish}
                         onFinishFailed={onFinishFailed}
                         layout="inline"
-                        className="common_search_form_frame"
+                        className="common_search_form_frame"                        
                     >                        
                         <Form.Item
                             label="页面名称"
@@ -114,6 +151,8 @@ class Page extends Component{
                         bordered 
                         columns={columns} 
                         dataSource={this.state.data?this.state.data:[]}
+                        pagination={pagination}
+                        id="page_table"
                     />  
                 </div>
             </div>

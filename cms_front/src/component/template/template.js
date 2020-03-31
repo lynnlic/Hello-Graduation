@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, Table, Tag} from 'antd';
 import Navigation from '../../container/navigation.js';
+import {getAllTemplate} from '../../action/templateAction.js';
 require('../../common.less');
 
 const onFinish = values =>{
@@ -13,8 +14,34 @@ class Template extends Component{
     constructor(props){
         super(props);
         this.state={
-            data:[]
+            data:[],
+            current:1,
+            pageSize:4,
+            total:0
         }
+    }
+
+    componentDidMount(){
+        getAllTemplate(this.state.current,this.state.pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total
+            })
+        })
+    }
+
+    onChangePage=(page,pageSize)=>{
+        getAllTemplate(page,pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:page
+            })
+        });
     }
 
     render(){
@@ -30,6 +57,11 @@ class Template extends Component{
               dataIndex: 'templateName',
               key: 'templateName',
             },
+            {
+                title: '所属系统',
+                dataIndex: 'sysName',
+                key: 'sysName',
+              },
             {
               title: '存放路径',
               dataIndex: 'templatePath',
@@ -66,6 +98,14 @@ class Template extends Component{
               ),
             },
           ];
+          const pagination={
+            simple: true,
+            total: this.state.total,
+            size:'small',
+            onChange: this.onChangePage,
+            current: this.state.current,
+            pageSize: this.state.pageSize,
+        }
 
         return(
             <div className="common_content_frame">
@@ -103,6 +143,7 @@ class Template extends Component{
                         bordered 
                         columns={columns} 
                         dataSource={this.state.data?this.state.data:[]}
+                        pagination={pagination}
                     />  
                 </div>
             </div>

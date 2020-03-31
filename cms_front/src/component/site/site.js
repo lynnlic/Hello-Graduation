@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, Table, Tag} from 'antd';
 import Navigation from '../../container/navigation.js';
+import {getAllSite} from '../../action/siteAction.js';
 require('../../common.less');
 
 const onFinish = values =>{
@@ -13,8 +14,34 @@ class Site extends Component{
     constructor(props){
         super(props);
         this.state={
-            data:[]
+            data:[],
+            current:1,
+            pageSize:5,
+            total:0
         }
+    }
+
+    componentDidMount(){
+        getAllSite(this.state.current,this.state.pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total
+            })
+        })
+    }
+
+    onChangePage=(page,pageSize)=>{
+        getAllSite(page,pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:page
+            })
+        });
     }
 
     render(){
@@ -22,8 +49,8 @@ class Site extends Component{
         const columns = [
             {
               title: '序号',
-              dataIndex: 'id',
-              key: 'id',
+              dataIndex: 'siteId',
+              key: 'siteId',
             },
             {
               title: '站点名',
@@ -56,6 +83,14 @@ class Site extends Component{
               ),
             },
           ];
+          const pagination={
+            simple: true,
+            total: this.state.total,
+            size:'small',
+            onChange: this.onChangePage,
+            current: this.state.current,
+            pageSize: this.state.pageSize,
+        }
 
         return(
             <div className="common_content_frame">
@@ -93,6 +128,7 @@ class Site extends Component{
                         bordered 
                         columns={columns} 
                         dataSource={this.state.data?this.state.data:[]}
+                        pagination={pagination}
                     />  
                 </div>
             </div>
