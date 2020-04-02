@@ -174,7 +174,13 @@ module.exports = {
         query: {
           name: 'static/media/[name].[hash:8].[ext]'
         }
-      }
+      },
+      /*{
+        test: /\.(jpe?g|png|gif|webp)$/,
+        loader: "url-loader",
+        esModule: false, 
+        name: 'images/[hash:6].[ext]',
+      }*/
       // ** STOP ** Are you adding a new loader?
       // Remember to add the new extension(s) to the "url" loader exclusion list.
     ]
