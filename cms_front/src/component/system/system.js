@@ -1,21 +1,24 @@
 import React, { Component } from 'react';
-import {Card, Pagination} from 'antd';
+import {Card, Pagination,Form, Input, Button} from 'antd';
 import {ZoomInOutlined} from '@ant-design/icons';
 import Navigation from '../../container/navigation.js';
-import {getSysDescribe} from '../../action/systemAction.js';
+import MainPage from './mainPage.js';
+import SysDetail from './sysDetail.js';
+import {getSysDescribe, getSysDetail, getPagesBySysid} from '../../action/systemAction.js';
 require('../../common.less');
 require('./system.less');
-
-const { Meta } = Card;
 
 class System extends Component {
     constructor (props) {
         super(props);
         this.state = {
             data:[],
+            detailData:[],
             current:1,
             pageSize:6,
-            total:0
+            total:0,
+            flag:true,//true:主界面 false：查看详情页
+            sysId:0
         }
     } 
 
@@ -30,8 +33,15 @@ class System extends Component {
         })
     }
 
-    onChange=(page,pageSize)=>{
-        console.log('page',page,'pageSize',pageSize);
+    shouldComponentUpdate(nextProps, nextState){
+        console.log('nextState',nextState)
+        if((nextState.detailData.length!=this.state.detailData.length)||(nextState.data.length!=this.state.data.length)){
+            return true;
+        }
+        return false;
+    }
+
+    onChangePage(page,pageSize){
         getSysDescribe(page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
@@ -39,80 +49,58 @@ class System extends Component {
                 code:res.result.code,
                 total:res.result.total,
                 current:page
-            })
-        });
+            });
+        })
     }
 
-    createCard(){
-        let cards = [];
-        if(this.state.data!=[]){
-            
-            this.state.data.map((item,index)=>{
-                console.log('item',item);
-                if(item.sysId!==0){
-                    var iconName=(item.sysIconPath||"").split('\\').pop();
-                    var path='../../images/'+(iconName===''?'unset_icon.png':iconName);
-                    cards.push(
-                        <Card
-                            key={item.sysId}
-                            hoverable
-                            style={{width:'230px'}}
-                            cover={
-                                <img alter={iconName+'图标'}
-                                     className="card_cover_img"
-                                     src={require('../../images/'+(iconName===''?'unset_icon.png':iconName))}
-                                />}
-                            actions={[
-                                <div>
-                                    <img style={{width: 20}} src={require('../../images/look_detail_icon.png')} />
-                                    <span>查看详情</span>
-                                </div>
-                            ]}
-                        >
-                            <Meta 
-                                title={item.sysName}
-                                description={item.sysUrl}
-                            />
-                        </Card>
-                    )
-                }
+    onChangeFlag(){
+        this.setState({
+            flag:!this.state.flag,
+            detailData:[]
+        })
+    }
+
+    getCurrentSysId(sysId){
+        getSysDetail(sysId).then((res)=>{
+            this.setState({
+                detailData:res.result.data,
+                sysId:sysId
             })
-        }
-        cards.push(
-            <Card
-                hoverable
-                style={{ width: 230 }}
-                cover={
-                    <img alter="增加新系统"
-                         className="card_cover_img"
-                         src={require('../../images/add_system_icon.png')}
-                    />
-                }
-            >
-                <Meta title="&nbsp;&nbsp;&nbsp;增加新系统&nbsp;&nbsp;&nbsp;" />
-            </Card>
+        }).then(
+            getPagesBySysid(sysId).then((res)=>{
+                console.log(',,,,',res)
+                this.setState({
+                    pages:this.result.data
+                })
+            })
         )
-        return cards;
+        
     }
 
+    
     render(){
         return (
             <div className="common_content_frame">
                 <Navigation 
                     text="生成系统管理"
                 />
-                <div className="card_sys_describe">
-                    {this.createCard()}
-                </div>
-                <Pagination 
-                    simple 
-                    small
-                    current={this.state.current}
-                    pageSize={this.state.pageSize}
-                    onChange={this.onChange}
-                    total={this.state.total}
-                    className="sys_pagination"
-                />
+                {this.state.flag?
+                    <MainPage 
+                        data={this.state.data}
+                        msg={this.state.msg}
+                        current={this.state.current}
+                        total={this.state.total} 
+                        pageSize={this.state.pageSize}   
+                        onChangePage={this.onChangePage.bind(this)}
+                        onChangeFlag={this.onChangeFlag.bind(this)}
+                        getCurrentSysId={this.getCurrentSysId.bind(this)}
+                    />
+                    :
+                    <SysDetail 
+                        onChangeFlag={this.onChangeFlag.bind(this)}
+                        detailData={this.state.detailData}
+                        sysId={this.state.sysId}
+                    />}
             </div>
         )
     }
