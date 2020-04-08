@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import {Form, Input, Button, PageHeader, Table,Divider, Tree} from 'antd';
+import {PageHeader, Table,Divider, Tree} from 'antd';
+import {getSysDetail, getPagesBySysid} from '../../action/systemAction.js';
 require('../../common.less');
 require('./system.less');
 
@@ -7,16 +8,94 @@ class SysDetail extends Component {
     constructor (props) {
         super(props);
         this.state = {
-
+            current:1,
+            pageSize:5,
+            tableData:[],
+            detailData:[],
+            sysId:0,
+            sites:[],
+            pages:[],
+            total:0,
+            selectedKeys:[]
         }
+    }
+
+    componentDidMount(){
+        console.log('sysid',this.props.sysId)
+        getSysDetail(this.props.sysId).then((res)=>{
+            this.setState({
+                detailData:res.result.data,
+                sysId:this.props.sysId
+            })
+        }).then(
+            getPagesBySysid(this.props.sysId).then((res)=>{
+                this.setState({
+                    sites:res.result.data[0],
+                    pages:res.result.data[1],
+                    tableData:res.result.data[1].slice(0,1*this.state.pageSize),
+                    total:res.result.data[1].length
+                })
+            })
+        )
     }
 
     onChangeFlag(){
         this.props.onChangeFlag();
     }
 
-    render(){
-        console.log('detail',this.props.sysId)
+    transformTreeData(sites,pages){
+        var siteTree = [];
+        sites.map((item, index)=>{
+            siteTree.push({title:item,key:index,children:[],selectable: false});
+        })
+        for(var page of pages){
+            var position=0;
+            siteTree.map((item,index)=>{
+                if(item.title===page.siteName) position=index;
+            })
+            siteTree[position].children.push({title:page.pageName,key:page.pageId})
+        }
+        return siteTree;
+    }
+
+    onSelect=(selectedKeys,e)=>{
+        var temp=[];
+        if(selectedKeys.length!==0){
+            for(var key of selectedKeys){
+                var tempTableData=[];
+                this.state.pages.map((item,index)=>{
+                    if(key===item.pageId){
+                        tempTableData=item;
+                    } 
+                })
+                temp.push(tempTableData)
+            }
+            this.setState({
+                tableData:temp,
+                current:1,
+                total:selectedKeys.length,
+                selectedKeys:selectedKeys
+            })
+        } else {
+            this.setState({
+                tableData:this.state.pages,
+                current:1,
+                total:this.state.pages.length,
+                selectedKeys:[]
+            })
+        }
+    }
+
+    onChangePage=(page,pageSize)=>{
+        let tableData=this.state.tableData.slice((page-1)*pageSize,page*pageSize);
+        this.setState({
+            current:page,
+            tableData:tableData
+        })
+    }
+
+    render(){        
+        const treeData=this.transformTreeData(this.state.sites,this.state.pages);
         const columns = [
             {
               title: '系统名称',
@@ -52,10 +131,44 @@ class SysDetail extends Component {
               title: '创建时间',
               key: 'sysCreateTime',
               dataIndex:'sysCreateTime'
-            },
+            }
           ];
+
+          const pageColumns=[{
+            title:'序号',
+            key:'id',
+            dataIndex:'id',
+            render:(text,record,index)=>{
+                return index+1;
+                }
+            },{
+                title:'页面名称',
+                key:'pageName',
+                dataIndex:'pageName'
+            },{
+                title:'所属站点',
+                key:'siteName',
+                dataIndex:'siteName'
+            },{
+                title:'存放位置',
+                key:'pagePath',
+                dataIndex:'pagePath'
+            },{
+                title:'创建时间',
+                key:'createTime',
+                dataIndex:'createTime'
+            }];
+            const pagination={
+                simple: true,
+                total: this.state.total,
+                size:'small',
+                onChange: this.onChangePage,
+                current: this.state.current,
+                pageSize: this.state.pageSize
+            }
+
         return(
-            <div>
+            <div className="sys_detail_frame">
                 <PageHeader
                     className="site-page-header"
                     onBack={this.onChangeFlag.bind(this)}
@@ -65,14 +178,28 @@ class SysDetail extends Component {
                     <Table 
                         bordered 
                         columns={columns} 
-                        dataSource={this.props.detailData?this.props.detailData:[]}
+                        dataSource={this.state.detailData?this.state.detailData:[]}
                         pagination={false}
                     />  
                 </div>
                 <Divider style={{backgroundColor:'#17cccc'}} />
-                <Tree 
-                    ///treeData={treeData}
-                />
+                <div className="sys_tree_line_frame">
+                    <Tree 
+                        treeData={treeData}
+                        className="system_tree_frame"
+                        onSelect={this.onSelect.bind(this)}
+                        multiple={true}
+                    />
+                    <Divider style={{backgroundColor:'#17cccc',height:'100%'}}  type="vertical" />
+                    <div className="sys_pages_table">
+                        <Table 
+                            bordered
+                            columns={pageColumns}
+                            dataSource={this.state.tableData}
+                            pagination={pagination}
+                        />
+                    </div>
+                </div>
             </div>
         )
     }

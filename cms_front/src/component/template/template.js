@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Tag} from 'antd';
+import { Form, Input, Button, Table} from 'antd';
 import Navigation from '../../container/navigation.js';
 import {getAllTemplate} from '../../action/templateAction.js';
 require('../../common.less');

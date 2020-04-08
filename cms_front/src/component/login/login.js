@@ -58,10 +58,10 @@ class Login extends Component {
                                 name='account' 
                                 label='账号'                            
                                 rules={ [{required: true, message: '请输入用户名!' },]} >                        
-                                    <Input className="login-form-input" prefix={<img src={require('../../images/icon_user.png')}/>} placeholder="请输入用户名"/>
+                                    <Input className="login-form-input" prefix={<img alt="账户图标" src={require('../../images/icon_user.png')}/>} placeholder="请输入用户名"/>
                             </Form.Item>
                             <Form.Item name='password' label='密码' rules={[{required:true, message:'请输入密码!'}]}>
-                                <Input className="login-form-input" type='password' prefix={<img src={require('../../images/icon_user.png')}/>} placeholder="请输入密码"/>
+                                <Input className="login-form-input" type='password' prefix={<img alt="密码图标" src={require('../../images/icon_user.png')}/>} placeholder="请输入密码"/>
                             </Form.Item>
                     <Form.Item>
                     <Button  htmlType="submit" type="primary" className="login-form-buttom">

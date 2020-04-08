@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import  {Spin, Form, Input, Button, Pagination, Card } from 'antd';
-import Navigation from '../../container/navigation.js';
+import  { Form, Input, Button, Pagination, Card } from 'antd';
 import {getSysDescribe} from '../../action/systemAction.js';
 require('../../common.less');
 require('./system.less');
@@ -18,11 +17,37 @@ class MainPage extends Component {
         super(props);
         this.state = {
             data:[],
+            total:0,
+            current:1,
+            pageSize:6,
         }
     } 
 
-    onChange=(page,pageSize)=>{
+    componentDidMount(){
+        getSysDescribe(this.state.current,this.state.pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total
+            });
+        })
+    }
+
+    /*onChange=(page,pageSize)=>{
         this.props.onChangePage(page,pageSize);
+    }*/
+
+    onChangePage(page,pageSize){
+        getSysDescribe(page,pageSize).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:page
+            });
+        })
     }
 
     onChangeFlag(){
@@ -33,26 +58,26 @@ class MainPage extends Component {
         this.props.getCurrentSysId(sysId);
     }
 
+
     createCard(){
         let cards = [];
-        if(this.props.data!=[]){            
-            this.props.data.map((item,index)=>{
+        if(this.state.data!==[]){            
+            this.state.data.map((item,index)=>{
                 if(item.sysId!==0){
                     var iconName=(item.sysIconPath||"").split('\\').pop();
-                    var path='../../images/'+(iconName===''?'unset_icon.png':iconName);
                     cards.push(
                         <Card
                             key={item.sysId}
                             hoverable
                             style={{width:'230px'}}
                             cover={
-                                <img alter={iconName+'图标'}
+                                <img alt={iconName+'图标'}
                                      className="card_cover_img"
                                      src={require('../../images/'+(iconName===''?'unset_icon.png':iconName))}
                                 />}
                             actions={[
                                 <div>
-                                    <img style={{width: 20}} src={require('../../images/look_detail_icon.png')} />
+                                    <img alt={"查看详情按钮"} style={{width: 20}} src={require('../../images/look_detail_icon.png')} />
                                     <Button type="link" 
                                             onClick={()=>{this.onChangeFlag(this);this.getCurrentSysId(item.sysId)}}>
                                             <span>查看详情</span>
@@ -70,13 +95,14 @@ class MainPage extends Component {
                 }
             })
         }
-        if(this.props.total<=(this.props.pageSize*this.props.current)){
+        if(this.state.total<=(this.state.pageSize*this.state.current)){
             cards.push(
                 <Card
                     hoverable
+                    key='add'
                     style={{ width: 230 }}
                     cover={
-                        <img alter="增加新系统"
+                        <img alt="增加新系统"
                             className="card_cover_img"
                             src={require('../../images/add_system_icon.png')}
                         />
@@ -117,10 +143,10 @@ class MainPage extends Component {
                 <Pagination 
                     simple 
                     small
-                    current={this.props.current}
-                    pageSize={this.props.pageSize}
-                    onChange={this.onChange}
-                    total={this.props.total}
+                    current={this.state.current}
+                    pageSize={this.state.pageSize}
+                    onChange={this.onChangePage.bind(this)}
+                    total={this.state.total}
                     className="sys_pagination"
                 />
             </div>
