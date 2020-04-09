@@ -34,10 +34,6 @@ class MainPage extends Component {
         })
     }
 
-    /*onChange=(page,pageSize)=>{
-        this.props.onChangePage(page,pageSize);
-    }*/
-
     onChangePage(page,pageSize){
         getSysDescribe(page,pageSize).then((res)=>{
             this.setState({

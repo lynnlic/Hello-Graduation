@@ -32,7 +32,7 @@ class SysDetail extends Component {
                 this.setState({
                     sites:res.result.data[0],
                     pages:res.result.data[1],
-                    tableData:res.result.data[1].slice(0,1*this.state.pageSize),
+                    tableData:res.result.data[1],
                     total:res.result.data[1].length
                 })
             })
@@ -55,6 +55,7 @@ class SysDetail extends Component {
             })
             siteTree[position].children.push({title:page.pageName,key:page.pageId})
         }
+        localStorage.setItem('treeInfo',siteTree);
         return siteTree;
     }
 
@@ -74,11 +75,13 @@ class SysDetail extends Component {
                 tableData:temp,
                 current:1,
                 total:selectedKeys.length,
-                selectedKeys:selectedKeys
+                selectedKeys:selectedKeys,
+                copytableData:temp
             })
         } else {
             this.setState({
                 tableData:this.state.pages,
+                copytableData:this.state.pages,
                 current:1,
                 total:this.state.pages.length,
                 selectedKeys:[]
@@ -87,7 +90,12 @@ class SysDetail extends Component {
     }
 
     onChangePage=(page,pageSize)=>{
-        let tableData=this.state.tableData.slice((page-1)*pageSize,page*pageSize);
+        let tableData=[];
+        if(this.state.selectedKeys.length>0){
+            tableData=this.state.copytableData.slice((page-1)*pageSize,page*pageSize);
+        } else {
+            tableData=this.state.pages.slice((page-1)*pageSize,page*pageSize);
+        }        
         this.setState({
             current:page,
             tableData:tableData
@@ -173,6 +181,7 @@ class SysDetail extends Component {
                     className="site-page-header"
                     onBack={this.onChangeFlag.bind(this)}
                     title="返回"
+                    key='pageHeader'
                 />
                 <div className="common_table_frame">
                     <Table 
@@ -180,23 +189,26 @@ class SysDetail extends Component {
                         columns={columns} 
                         dataSource={this.state.detailData?this.state.detailData:[]}
                         pagination={false}
+                        key='detailTable'
                     />  
                 </div>
-                <Divider style={{backgroundColor:'#17cccc'}} />
+                <Divider key='divider1' style={{backgroundColor:'#17cccc'}} />
                 <div className="sys_tree_line_frame">
                     <Tree 
                         treeData={treeData}
                         className="system_tree_frame"
                         onSelect={this.onSelect.bind(this)}
                         multiple={true}
+                        key='pageTree'
                     />
-                    <Divider style={{backgroundColor:'#17cccc',height:'100%'}}  type="vertical" />
+                    <Divider key='divider2' style={{backgroundColor:'#17cccc',height:'100%'}}  type="vertical" />
                     <div className="sys_pages_table">
                         <Table 
                             bordered
                             columns={pageColumns}
                             dataSource={this.state.tableData}
                             pagination={pagination}
+                            key='pageTable'
                         />
                     </div>
                 </div>

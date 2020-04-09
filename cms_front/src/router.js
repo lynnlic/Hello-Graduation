@@ -12,6 +12,7 @@ import Site from './component/site/site.js';
 import Template from './component/template/template.js';
 import Page from './component/page/page.js';
 import System from './component/system/system.js';
+import CreatePage from './component/createPage/createPage.js';
 import App from './App.js';
 
 
@@ -24,6 +25,7 @@ export default(
         <Route path='/home/template' component={Template} />
         <Route path='/home/page' component={Page} />
         <Route path='/home/sys' component={System} />
+        <Route path='/home/createPage' component={CreatePage} />
         <Route path='/app' component={App} />
     </Switch>
 )
