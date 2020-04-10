@@ -20,3 +20,19 @@ export function getAllTemplate(currentPage=1, number=5){
         return data;
     })
 }
+
+/**
+ * 根据系统id获取其模板
+ */
+export function getTemplateBySysid(sysId){
+    return(myfetch('/template/getTemplateBySysid?sysId='+sysId, 'GET'))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        console.log('content',res);
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}

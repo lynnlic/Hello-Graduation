@@ -12,6 +12,21 @@ export function getAllData(currentPage=1, number=5){
     return(myfetch('/content/getData?currentPage='+currentPage+'&number='+number, 'GET'))
     .then((res) => {return res.json(); })
     .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ * 根据站点id获取内容
+ */
+export function getDataBySiteName(siteName){
+    return(myfetch('/content/getDataBySiteName?siteName='+siteName, 'GET'))
+    .then((res) => {return res.json(); })
+    .then((res) => {
         console.log('content',res);
         const data = {
             isFetching: false,

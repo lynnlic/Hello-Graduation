@@ -11,7 +11,6 @@ export function getAllSysName(){
     return(myfetch('/system/getSysName', 'GET'))
     .then((res) => {return res.json(); })
     .then((res) => {
-        console.log('content',res);
         const data = {
             isFetching: false,
             result:res
