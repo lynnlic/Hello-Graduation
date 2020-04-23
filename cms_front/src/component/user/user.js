@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table} from 'antd';
+import { Form, Input, Button, Table, message} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getAllUser} from '../../action/userAction.js';
+import {addUser, getUserByCondition} from '../../action/userAction.js';
+import AddUserModal from './addUserModal.js';
 require('../../common.less');
-
-const onFinish = values =>{
-    console.log('values',values);
-}
 
 const onFinishFailed=null;
 
@@ -17,32 +14,79 @@ class User extends Component{
             data:[],
             current:1,
             pageSize:5,
-            total:0
+            total:0,
+            addVisible:false,
+            key:0,
+            searchAccount:undefined,
+            searchName:undefined
         }
     }
 
     componentDidMount(){
-        getAllUser(this.state.current,this.state.pageSize).then((res)=>{
-            console.log('this---',this)
+        getUserByCondition(undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
                 code:res.result.code,
-                total:res.result.total
+                total:res.result.total==0?1:res.result.total
             })
         })
     }
 
     onChangePage=(page,pageSize)=>{
-        getAllUser(page,pageSize).then((res)=>{
+        getUserByCondition(this.state.searchAccount,this.state.searchName,page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
                 code:res.result.code,
-                total:res.result.total,
+                total:res.result.total==0?1:res.result.total,
                 current:page
             })
         });
+    }
+
+    setVisible(){
+        this.setState({
+            addVisible:!this.state.addVisible,
+            key:this.state.key+1
+        })
+    }
+
+    handleAddVlaue(values){
+        var addResult={};
+        addUser(values).then((res)=>{
+            if(res.result.code==201){
+                message.success(res.result.msg);
+            } else {
+                message.error(res.result.msg);
+            }            
+        }).then(
+            getUserByCondition(this.state.searchAccount,this.state.searchName,1,this.state.pageSize).then((res)=>{
+                this.setState({
+                    data:res.result.data,
+                    msg:res.result.msg,
+                    code:res.result.code,
+                    total:res.result.total==0?1:res.result.total,
+                    current:1
+                })
+            })
+        )       
+        this.setVisible();
+    }
+
+    onFinish = values =>{
+        getUserByCondition(values.account,values.name,1,this.state.pageSize).then((res)=>{
+            console.log(res);
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total==0?1:res.result.total,
+                current:1,
+                searchAccount:values.account,
+                searchName:values.name
+            })
+        })
     }
 
     render(){
@@ -105,7 +149,7 @@ class User extends Component{
                 />
                     <Form
                         name="search_form"
-                        onFinish={onFinish}
+                        onFinish={this.onFinish.bind(this)}
                         onFinishFailed={onFinishFailed}
                         layout="inline"
                         className="common_search_form_frame"
@@ -125,7 +169,7 @@ class User extends Component{
                             <Button type="primary" htmlType="submit" className="common_button_width">
                                 搜  索
                             </Button>
-                            <Button className="common_button_width common_button_add">
+                            <Button className="common_button_width common_button_add" onClick={this.setVisible.bind(this)}>
                                 新  增
                             </Button>                        
                     </Form>
@@ -135,9 +179,14 @@ class User extends Component{
                         columns={columns} 
                         dataSource={this.state.data?this.state.data:[]}
                         pagination={pagination}
-                    />  
-                    
+                    />                      
                 </div>
+                <AddUserModal 
+                    setVisible={this.setVisible.bind(this)}
+                    visible={this.state.addVisible}
+                    handleAddVlaue={this.handleAddVlaue.bind(this)}
+                    key={this.state.key}
+                />
             </div>
         )
     }

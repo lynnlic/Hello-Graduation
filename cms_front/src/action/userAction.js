@@ -5,14 +5,38 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * currentPage:当前页,
- * number:每页多少条
+ * 增加站点
+ * @param {*} value 
  */
-export function getAllUser(currentPage=1, number=10){
-    return(myfetch('/user/getAllUser?currentPage='+currentPage+'&number='+number, 'GET'))
+export function addUser(value={}){
+    return (myfetch('/user/addUser','POST',JSON.stringify(value)))
     .then((res) => {return res.json(); })
     .then((res) => {
-        console.log('user',res);
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ * 根据条件获取user
+ * @param {*} account 账号
+ * @param {*} name 用户姓名
+ * @param {*} currentPage 当前页
+ * @param {*} number 每页条数
+ */
+export function getUserByCondition(account,name,currentPage=1, number=10){
+    const obj={
+        account:account==""?undefined:account,
+        name:name==""?undefined:name,
+        currentPage:currentPage,
+        number:number
+    }
+    return(myfetch('/user/getUserByCondition', 'POST',JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
         const data = {
             isFetching: false,
             result:res

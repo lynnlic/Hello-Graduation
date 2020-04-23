@@ -23,11 +23,10 @@ export function getAllData(currentPage=1, number=5){
 /**
  * 根据站点id获取内容
  */
-export function getDataBySiteName(siteName){
-    return(myfetch('/content/getDataBySiteName?siteName='+siteName, 'GET'))
+export function getDataBySiteId(siteId){
+    return(myfetch('/content/getDataBySiteId?siteId='+siteId, 'GET'))
     .then((res) => {return res.json(); })
     .then((res) => {
-        console.log('content',res);
         const data = {
             isFetching: false,
             result:res

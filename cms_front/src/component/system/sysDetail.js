@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {PageHeader, Table,Divider, Tree} from 'antd';
 import {getSysDetail, getPagesBySysid} from '../../action/systemAction.js';
+import {transformTreeData} from '../../util/transformData.js';
 require('../../common.less');
 require('./system.less');
 
@@ -42,23 +43,7 @@ class SysDetail extends Component {
     onChangeFlag(){
         this.props.onChangeFlag();
     }
-
-    transformTreeData(sites,pages){
-        var siteTree = [];
-        sites.map((item, index)=>{
-            siteTree.push({title:item,key:index,children:[],selectable: false});
-        })
-        for(var page of pages){
-            var position=0;
-            siteTree.map((item,index)=>{
-                if(item.title===page.siteName) position=index;
-            })
-            siteTree[position].children.push({title:page.pageName,key:page.pageId})
-        }
-        localStorage.setItem('treeInfo',siteTree);
-        return siteTree;
-    }
-
+    
     onSelect=(selectedKeys,e)=>{
         var temp=[];
         if(selectedKeys.length!==0){
@@ -103,7 +88,7 @@ class SysDetail extends Component {
     }
 
     render(){        
-        const treeData=this.transformTreeData(this.state.sites,this.state.pages);
+        const treeData=transformTreeData(this.state.sites,this.state.pages);
         const columns = [
             {
               title: '系统名称',

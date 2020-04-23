@@ -1,7 +1,7 @@
 export function transformTreeData(sites,pages){
     var siteTree = [];
     sites.map((item, index)=>{
-        siteTree.push({title:item,key:index,children:[],selectable: false});
+        siteTree.push({title:item.siteName,key:index,children:[],selectable: false});
     })
     for(var page of pages){
         var position=0;

@@ -76,14 +76,16 @@ module.exports = {
     // some tools, although we do not recommend using it, see:
     // https://github.com/facebookincubator/create-react-app/issues/290
     extensions: ['.js', '.json', '.jsx', ''],
+    //设置别名
     alias: {
+      //'react':require('../node_modules/react'),
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web'
     }
   },
   
-  module: {
+  module: {    
     // First, run the linter.
     // It's important to do this before Babel processes the JS.
     preLoaders: [

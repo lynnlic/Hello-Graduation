@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table} from 'antd';
+import { Form, Input, Button, Table, Select} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getAllTemplate} from '../../action/templateAction.js';
+import {getAllTemplate,getTemplateByCondition} from '../../action/templateAction.js';
+import AddTemplateModal from './addTemplateModal.js';
 require('../../common.less');
 
-const onFinish = values =>{
-    console.log('values',values);
-}
-
 const onFinishFailed=null;
+
+const layout = {
+    labelCol: { span: 8 },
+    wrapperCol: { span: 16 },
+};
 
 class Template extends Component{
     constructor(props){
@@ -17,12 +19,16 @@ class Template extends Component{
             data:[],
             current:1,
             pageSize:4,
-            total:0
+            total:0,
+            addVisible:false,
+            searchSysId:undefined,
+            searchTemplateName:undefined,
+            searchState:undefined
         }
     }
 
     componentDidMount(){
-        getAllTemplate(this.state.current,this.state.pageSize).then((res)=>{
+        getTemplateByCondition(undefined,undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -33,7 +39,7 @@ class Template extends Component{
     }
 
     onChangePage=(page,pageSize)=>{
-        getAllTemplate(page,pageSize).then((res)=>{
+        getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -44,8 +50,37 @@ class Template extends Component{
         });
     }
 
-    render(){
+    onFinish = values =>{
+        console.log('values',values);
+        getTemplateByCondition(values.sysId,values.templateName,values.state,1,this.state.pageSize).then((res)=>{
+            console.log('res',res)
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                current:1,
+                searchSysId:values.sysId,
+                searchTemplateName:values.templateName,
+                searchState:values.state
+            })
+        });
+    }
 
+    setVisible(){
+        this.setState({
+            addVisible:!this.state.addVisible,
+            key:this.state.key+1
+        })
+    }
+
+    handleAddValue(values){
+        //this.setVisible();
+        console.log('...',values);
+    }
+
+    render(){
+        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
         const columns = [
             {
               title: '序号',
@@ -86,6 +121,17 @@ class Template extends Component{
                 title: '模板状态',
                 key: 'state',
                 dataIndex: 'state',
+                render:(text,record)=>{
+                    if(record.state==0){
+                        return (
+                            <span>启用</span>
+                        )
+                    } else {
+                        return (
+                            <span>禁用</span>
+                        )
+                    }
+                }
               },
             {
               title: '操作',
@@ -113,12 +159,23 @@ class Template extends Component{
                     text='模板管理'
                 />
                     <Form
+                        {...layout}
                         name="search_form"
-                        onFinish={onFinish}
+                        onFinish={this.onFinish.bind(this)}
                         onFinishFailed={onFinishFailed}
                         layout="inline"
                         className="common_search_form_frame"
-                    >                        
+                    >     
+                        <Form.Item
+                            label="系统名"
+                            name="sysId"
+                        >
+                            <Select allowClear="true">
+                                {sysInfo.map((item, index)=>{
+                                    return <Select.Option value={item.sysId} key={item.sysSaveName}>{item.sysName}</Select.Option>
+                                })}
+                            </Select>
+                        </Form.Item>                   
                         <Form.Item
                             label="模板名称"
                             name="templateName"
@@ -129,12 +186,15 @@ class Template extends Component{
                             label="模板状态"
                             name="state"
                         >
-                            <Input />
+                            <Select allowClear="true">
+                                <Select.Option value='0' key='0'>启用</Select.Option>
+                                <Select.Option value='1' key='1'>禁用</Select.Option>
+                            </Select>
                         </Form.Item>                        
                             <Button type="primary" htmlType="submit" className="common_button_width">
                                 搜  索
                             </Button>
-                            <Button className="common_button_width common_button_add">
+                            <Button className="common_button_width common_button_add" onClick={this.handleAddValue.bind(this)}>
                                 新  增
                             </Button>                        
                     </Form>
@@ -146,6 +206,12 @@ class Template extends Component{
                         pagination={pagination}
                     />  
                 </div>
+                <AddTemplateModal 
+                    setVisible={this.setVisible.bind(this)}
+                    visible={this.state.addVisible}
+                    handleAddValue={this.handleAddValue.bind(this)}
+                    key={this.state.key}
+                />
             </div>
         )
     }

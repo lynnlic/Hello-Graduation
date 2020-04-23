@@ -36,3 +36,23 @@ export function getTemplateBySysid(sysId){
         return data;
     })
 }
+
+export function getTemplateByCondition(sysId,templateName,state,currentPage=1, number=5){
+    const obj={
+        sysId:sysId,
+        templateName:templateName==""?undefined:templateName,
+        state:state==""?undefined:state,
+        currentPage:currentPage,
+        number:number
+    }
+    console.log('obj',obj);
+    return(myfetch('/template/getTemplateByCondition', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}

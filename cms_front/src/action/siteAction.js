@@ -5,14 +5,38 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * currentPage:当前页,
- * number:每页多少条
+ * 增加站点
+ * @param {*} value 站点信息
  */
-export function getAllSite(currentPage=1, number=5){
-    return(myfetch('/site/getAllSite?currentPage='+currentPage+'&number='+number, 'GET'))
+export function addSite(value={}){
+    return (myfetch('/site/addSite','POST',JSON.stringify(value)))
     .then((res) => {return res.json(); })
     .then((res) => {
-        console.log('content',res);
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ *  根据条件查询站点
+ * @param {*} sysId 系统ID
+ * @param {*} siteName 站点名
+ * @param currentPage 当前页
+ * @param number 每页多少条
+ */
+export function getSiteByCondition(sysId,siteName,currentPage=1, number=5){
+    const obj={
+        sysId:sysId,
+        siteName:siteName==""?undefined:siteName,
+        currentPage:currentPage,
+        number:number
+    }
+    return (myfetch('/site/getSiteByCondition','POST',JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
         const data = {
             isFetching: false,
             result:res
