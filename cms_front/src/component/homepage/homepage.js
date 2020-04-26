@@ -33,14 +33,17 @@ class Home extends Component{
                     </Header>
                     <Layout className="home_below">
                         <Sider trigger={null} collapsible width='150'>                             
-                            <Menu mode='inline'>     
-                                <Menu.Item key='1'><Link to="/home/createPage">生成静态页</Link></Menu.Item>                          
+                            <Menu mode='inline'>    
+                                <Menu.Item key='1'><Link to="/home/createPage">生成静态页</Link></Menu.Item>                
                                 <Menu.Item key='2'><Link to="/home/template">模板管理</Link></Menu.Item>
                                 <Menu.Item key='3'><Link to="/home/sys">生成系统管理</Link></Menu.Item>
                                 <Menu.Item key='4'><Link to="/home/site">站点管理</Link></Menu.Item>
                                 <Menu.Item key='5'><Link to="/home/content">内容管理</Link></Menu.Item>
-                                <Menu.Item key='6'><Link to="/home/page">生成页管理</Link></Menu.Item>                                
-                                <Menu.Item key='7'><Link to="/home/user">用户管理</Link></Menu.Item>                                    
+                                <Menu.SubMenu key='6' title='生成页管理'>
+                                    <Menu.Item key='7'><Link to="/home/page">生成页信息</Link></Menu.Item> 
+                                    <Menu.Item key='1'><Link to="/home/createPage">生成静态页</Link></Menu.Item>
+                                </Menu.SubMenu>                               
+                                <Menu.Item key='8'><Link to="/home/user">用户管理</Link></Menu.Item>                                    
                             </Menu>
                         </Sider>
                         <Layout>

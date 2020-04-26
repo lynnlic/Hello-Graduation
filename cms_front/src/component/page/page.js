@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table} from 'antd';
+import {Link} from 'react-router-dom';
+import { Form, Input, Button, Table, Select, message} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getAllPage} from '../../action/pageAction.js'
+import {getAllPage,getPagesByCondition,deletePage} from '../../action/pageAction.js'
 require('../../common.less');
 require('./page.less');
 
-const onFinish = values =>{
-    console.log('values',values);
-}
+const layout = {
+    labelCol: { span: 8 },
+    wrapperCol: { span: 16 },
+};
 
 const onFinishFailed=null;
 
@@ -18,7 +20,9 @@ class Page extends Component{
             data:[],
             current:1,
             pageSize:5,
-            total:0
+            total:0,
+            searchPageName:undefined,
+            searchSysId:undefined
         }
     }
 
@@ -45,8 +49,55 @@ class Page extends Component{
         });
     }
 
-    render(){
+    onFinish = values =>{
+        console.log('values',values);
+        getPagesByCondition(values.name,values.sysId).then((res)=>{
+            console.log(res);
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total==0?1:res.result.total,
+                current:1,
+                searchPageName:values.name,
+                searchSysId:values.sysId
+            })
+        })
+    }
 
+    addPage(){ 
+        document.getElementsByClassName("ant-menu-item")[6].classList.add("ant-menu-item-selected");
+        document.getElementsByClassName("ant-menu-item")[0].classList.add("ant-menu-item-selected");
+        document.getElementsByClassName("ant-menu-item")[5].classList.remove("ant-menu-item-selected");
+    }
+
+    loadLoaclFile(pagePath){
+        console.log('..',pagePath)
+
+    }
+
+    deletePage(pageId,pagePath){
+        deletePage(pageId,pagePath).then((res)=>{
+            if(res.result.code==204){
+                message.success(res.result.msg);
+            } else {
+                message.error(res.result.msg)
+            }
+        }).then(
+            getPagesByCondition(this.state.searchPageName,this.state.searchSysId).then((res)=>{
+                this.setState({
+                    data:res.result.data,
+                    msg:res.result.msg,
+                    code:res.result.code,
+                    total:res.result.total==0?1:res.result.total,
+                    current:1
+                })
+            })
+        )
+    }
+
+    render(){
+        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
         const columns = [
             {
               title: '序号',
@@ -94,7 +145,8 @@ class Page extends Component{
               render: (text, record) => (
                 <span>
                   <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
-                  <a>Delete</a>
+                  <a onClick={this.deletePage.bind(this,record.pageId,record.pagePath)}>删除页面 </a>
+                  <a  onClick={this.loadLoaclFile.bind(this,record.pageId,record.pagePath)}>查看模板</a>
                 </span>
               ),
             },
@@ -115,36 +167,37 @@ class Page extends Component{
                     text='生成页管理'
                 />
                     <Form
+                        {...layout}
                         name="search_form"
-                        onFinish={onFinish}
+                        onFinish={this.onFinish.bind(this)}
                         onFinishFailed={onFinishFailed}
                         layout="inline"
                         className="common_search_form_frame"                        
                     >                        
                         <Form.Item
                             label="页面名称"
-                            name="templateName"
+                            name="name"
                         >
                             <Input />
                         </Form.Item>
                         <Form.Item
                             label="所属系统"
-                            name="state"
+                            name="sysId"
                         >
-                            <Input />
-                        </Form.Item>       
-                        <Form.Item
-                            label="所用模板"
-                            name="state"
-                        >
-                            <Input />
-                        </Form.Item>                  
-                            <Button type="primary" htmlType="submit" className="common_button_width">
-                                搜  索
-                            </Button>
-                            <Button className="common_button_width common_button_add">
+                            <Select allowClear="true">
+                                {sysInfo.map((item, index)=>{
+                                    return <Select.Option value={item.sysId} key={item.sysSaveName}>{item.sysName}</Select.Option>
+                                })}
+                            </Select>
+                        </Form.Item>                    
+                        <Button type="primary" htmlType="submit" className="common_button_width">
+                            搜  索
+                        </Button>
+                        <Link to='/home/createPage'>
+                            <Button style={{width: '100%'}} className="common_button_width common_button_add" onClick={this.addPage.bind(this)}>
                                 新  增
-                            </Button>                        
+                            </Button> 
+                        </Link>                       
                     </Form>
                 <div className="common_table_frame">
                     <Table 

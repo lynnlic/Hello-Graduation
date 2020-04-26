@@ -37,6 +37,14 @@ export function getTemplateBySysid(sysId){
     })
 }
 
+/**
+ * 获取模板信息
+ * @param {*} sysId 
+ * @param {*} templateName 
+ * @param {*} state 
+ * @param {*} currentPage 
+ * @param {*} number 
+ */
 export function getTemplateByCondition(sysId,templateName,state,currentPage=1, number=5){
     const obj={
         sysId:sysId,
@@ -45,8 +53,49 @@ export function getTemplateByCondition(sysId,templateName,state,currentPage=1, n
         currentPage:currentPage,
         number:number
     }
-    console.log('obj',obj);
     return(myfetch('/template/getTemplateByCondition', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ * 上传文件
+ * @param {String} fileName 
+ */
+export function loadLocalTemplate(fileName=''){
+    const obj = {
+        fileName:fileName
+    }
+    return(myfetch('/template/loadLocalTemplate', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+export function AddTemplate(templateName,sysId,describe,state,filePath,tagList=[],id){
+    console.log('tag',tagList,'path',filePath)
+    const obj={
+        templateName:templateName,
+        sysId:sysId,
+        describe:describe,
+        state:state,
+        filePath:filePath,
+        tagList:tagList.join(','),
+        id:id
+    }
+    console.log('obj',obj)
+    return(myfetch('/template/addTemplate', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {
         const data = {

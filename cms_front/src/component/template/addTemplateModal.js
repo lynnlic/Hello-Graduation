@@ -14,7 +14,8 @@ class AddTemplateModal extends React.Component {
     constructor(props){
         super(props);
         this.state={
-            tags:[]
+            tags:undefined,
+            filePath:undefined
         }
     }
 
@@ -23,7 +24,9 @@ class AddTemplateModal extends React.Component {
     handleValue(){
         this.formRef.current.validateFields().then((values)=>{
             /*this.props.handleAddValue(values);*/
+
             console.log(values)
+            this.props.handleAddValue(values,this.state.filePath,this.state.tags);
         })
        
     }
@@ -32,8 +35,10 @@ class AddTemplateModal extends React.Component {
         if(info.file.status==='done'){
             console.log(info.file.response);
             this.setState({
-                tags:info.file.response.data
+                tags:info.file.response.data.tagList,
+                filePath:info.file.response.data.filePath
             })
+            localStorage.setItem('file',JSON.stringify(info.file))
         }
     }
     
@@ -88,13 +93,6 @@ class AddTemplateModal extends React.Component {
                                 </Button>
                             </Upload>
                         </Form.Item>
-                        <Form.Item
-                            label="存储路径"
-                            name="templatePath"
-                            rules={[{ required: true }]}
-                        >
-                            <Input />
-                        </Form.Item> 
                         <Form.Item
                             label="模板描述"
                             name="describe"

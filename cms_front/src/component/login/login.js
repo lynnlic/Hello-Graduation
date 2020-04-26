@@ -19,12 +19,12 @@ class Login extends Component {
             promise.then((res)=>{
                 this.setState({
                     user: res.result
-                })
-                localStorage.setItem('user', res.result);               
+                })             
             }).then(()=> {
                 console.log(this.state.user)
                 const code = this.state.user.code;
                 if(code === 0){//登陆成功
+                    localStorage.setItem('user',JSON.stringify(this.state.user));
                     location.assign('/home');
                 } else {
                     Modal.error({

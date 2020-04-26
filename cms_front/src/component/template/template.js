@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Select} from 'antd';
+import { Form, Input, Button, Table, Select, message, Modal} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getAllTemplate,getTemplateByCondition} from '../../action/templateAction.js';
+import {getTemplateByCondition, loadLocalTemplate, AddTemplate} from '../../action/templateAction.js';
 import AddTemplateModal from './addTemplateModal.js';
+import FileContentModal from './filecontentModal.js';
 require('../../common.less');
+
 
 const onFinishFailed=null;
 
@@ -20,10 +22,14 @@ class Template extends Component{
             current:1,
             pageSize:4,
             total:0,
+            key: 0,
             addVisible:false,
+            savePath:'D:\\cms\\template\\',
             searchSysId:undefined,
             searchTemplateName:undefined,
-            searchState:undefined
+            searchState:undefined,
+            fileVisible:false, //“查看模板框”是够可见
+            fileData:''
         }
     }
 
@@ -67,6 +73,9 @@ class Template extends Component{
         });
     }
 
+    /**
+     * 新增弹框的是否可见
+     */
     setVisible(){
         this.setState({
             addVisible:!this.state.addVisible,
@@ -74,9 +83,54 @@ class Template extends Component{
         })
     }
 
-    handleAddValue(values){
-        //this.setVisible();
+    /**
+     * 查看模板的弹框
+     */
+    setFileVisible(){
+        this.setState({
+            fileVisible:!this.state.fileVisible,
+            fileContentKey: this.state.key+1
+        })
+    }
+
+    handleAddValue(values,filePath,tagList){
         console.log('...',values);
+        //登录者的id
+        var id=JSON.parse(localStorage.getItem('user')).data.id;
+        AddTemplate(values.templateName,values.sysId,values.describe,values.state,filePath,tagList,id)
+        .then((res)=>{
+            if(res.result.code==201){
+                message.success(res.result.msg);
+            } else {
+                message.error(res.result.msg);
+            }
+        }).then(
+            getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,1,this.state.pageSize).then((res)=>{
+                this.setState({
+                    data:res.result.data,
+                    msg:res.result.msg,
+                    code:res.result.code,
+                    total:res.result.total,
+                    current:1
+                })
+            })
+        );
+        this.setVisible();
+    }
+
+    loadLoaclFile(path){
+        loadLocalTemplate(path).then(res=>{
+            console.log(res);
+            if(res.result.code==203){
+                message.error(res.result.msg)
+            } else if(res.result.code==200){
+                this.setState({
+                    fileVisible:true,
+                    fileData:res.result.data.tagList,
+                    //filePath:res.result.data.filePath
+                })
+            }
+        })
     }
 
     render(){
@@ -97,11 +151,11 @@ class Template extends Component{
                 dataIndex: 'sysName',
                 key: 'sysName',
               },
-            {
+            /*{
               title: '存放路径',
               dataIndex: 'templatePath',
               key: 'templatePath',
-            },
+            },*/
             {
               title: '模板描述',
               key: 'describe',
@@ -136,12 +190,15 @@ class Template extends Component{
             {
               title: '操作',
               key: 'action',
-              render: (text, record) => (
-                <span>
+              render: (text, record) =>{
+                  return (
+                      <span>
                   <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
-                  <a>Delete</a>
+                  <a>删除 </a>
+                  <a  onClick={this.loadLoaclFile.bind(this,record.templatePath)}>查看模板</a>
                 </span>
-              ),
+                  )
+              } 
             },
           ];
           const pagination={
@@ -194,9 +251,9 @@ class Template extends Component{
                             <Button type="primary" htmlType="submit" className="common_button_width">
                                 搜  索
                             </Button>
-                            <Button className="common_button_width common_button_add" onClick={this.handleAddValue.bind(this)}>
+                            <Button className="common_button_width common_button_add" onClick={this.setVisible.bind(this)}>
                                 新  增
-                            </Button>                        
+                            </Button>            
                     </Form>
                 <div className="common_table_frame">
                     <Table 
@@ -211,6 +268,11 @@ class Template extends Component{
                     visible={this.state.addVisible}
                     handleAddValue={this.handleAddValue.bind(this)}
                     key={this.state.key}
+                />
+                <FileContentModal 
+                    fileVisible={this.state.fileVisible}
+                    fileData={this.state.fileData}
+                    setFileVisible={this.setFileVisible.bind(this)}
                 />
             </div>
         )
