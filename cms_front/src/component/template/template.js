@@ -3,7 +3,7 @@ import { Form, Input, Button, Table, Select, message, Modal} from 'antd';
 import Navigation from '../../container/navigation.js';
 import {getTemplateByCondition, loadLocalTemplate, AddTemplate} from '../../action/templateAction.js';
 import AddTemplateModal from './addTemplateModal.js';
-import FileContentModal from './filecontentModal.js';
+import FileViewModal from '../../util/fileViewModal.js';
 require('../../common.less');
 
 
@@ -29,12 +29,14 @@ class Template extends Component{
             searchTemplateName:undefined,
             searchState:undefined,
             fileVisible:false, //“查看模板框”是够可见
-            fileData:''
+            fileData:'',
+            type:'txt',
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent
         }
     }
 
     componentDidMount(){
-        getTemplateByCondition(undefined,undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
+        getTemplateByCondition(undefined,undefined,undefined, this.state.parentId,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -45,7 +47,7 @@ class Template extends Component{
     }
 
     onChangePage=(page,pageSize)=>{
-        getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,page,pageSize).then((res)=>{
+        getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -57,9 +59,7 @@ class Template extends Component{
     }
 
     onFinish = values =>{
-        console.log('values',values);
-        getTemplateByCondition(values.sysId,values.templateName,values.state,1,this.state.pageSize).then((res)=>{
-            console.log('res',res)
+        getTemplateByCondition(values.sysId,values.templateName,values.state,this.state.parentId,1,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -94,9 +94,8 @@ class Template extends Component{
     }
 
     handleAddValue(values,filePath,tagList){
-        console.log('...',values);
         //登录者的id
-        var id=JSON.parse(localStorage.getItem('user')).data.id;
+        var id=JSON.parse(sessionStorage.getItem('user')).id;
         AddTemplate(values.templateName,values.sysId,values.describe,values.state,filePath,tagList,id)
         .then((res)=>{
             if(res.result.code==201){
@@ -105,7 +104,7 @@ class Template extends Component{
                 message.error(res.result.msg);
             }
         }).then(
-            getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,1,this.state.pageSize).then((res)=>{
+            getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
                 this.setState({
                     data:res.result.data,
                     msg:res.result.msg,
@@ -118,7 +117,8 @@ class Template extends Component{
         this.setVisible();
     }
 
-    loadLoaclFile(path){
+    loadLoaclFile(path ){
+        var type=path.split('.').pop();
         loadLocalTemplate(path).then(res=>{
             console.log(res);
             if(res.result.code==203){
@@ -126,7 +126,8 @@ class Template extends Component{
             } else if(res.result.code==200){
                 this.setState({
                     fileVisible:true,
-                    fileData:res.result.data.tagList,
+                    fileData:res.result.data,
+                    type:type
                     //filePath:res.result.data.filePath
                 })
             }
@@ -134,7 +135,7 @@ class Template extends Component{
     }
 
     render(){
-        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
+        const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
         const columns = [
             {
               title: '序号',
@@ -269,10 +270,13 @@ class Template extends Component{
                     handleAddValue={this.handleAddValue.bind(this)}
                     key={this.state.key}
                 />
-                <FileContentModal 
+                <FileViewModal 
                     fileVisible={this.state.fileVisible}
                     fileData={this.state.fileData}
                     setFileVisible={this.setFileVisible.bind(this)}
+                    title='查看模板'
+                    type={this.state.type}
+                    key={this.state.fileContentKey}
                 />
             </div>
         )

@@ -18,12 +18,13 @@ class User extends Component{
             addVisible:false,
             key:0,
             searchAccount:undefined,
-            searchName:undefined
+            searchName:undefined,
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent
         }
     }
 
     componentDidMount(){
-        getUserByCondition(undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
+        getUserByCondition(undefined,undefined,this.state.parentId,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -34,7 +35,7 @@ class User extends Component{
     }
 
     onChangePage=(page,pageSize)=>{
-        getUserByCondition(this.state.searchAccount,this.state.searchName,page,pageSize).then((res)=>{
+        getUserByCondition(this.state.searchAccount,this.state.searchName,this.state.parentId,page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -53,15 +54,15 @@ class User extends Component{
     }
 
     handleAddVlaue(values){
-        var addResult={};
-        addUser(values).then((res)=>{
+        var addValues=Object.assign(values, {parentId:this.state.parentId});
+        addUser(addValues).then((res)=>{
             if(res.result.code==201){
                 message.success(res.result.msg);
             } else {
                 message.error(res.result.msg);
             }            
         }).then(
-            getUserByCondition(this.state.searchAccount,this.state.searchName,1,this.state.pageSize).then((res)=>{
+            getUserByCondition(this.state.searchAccount,this.state.searchName,this.state.parentId,1,this.state.pageSize).then((res)=>{
                 this.setState({
                     data:res.result.data,
                     msg:res.result.msg,
@@ -75,7 +76,7 @@ class User extends Component{
     }
 
     onFinish = values =>{
-        getUserByCondition(values.account,values.name,1,this.state.pageSize).then((res)=>{
+        getUserByCondition(values.account,values.name,this.state.parentId,1,this.state.pageSize).then((res)=>{
             console.log(res);
             this.setState({
                 data:res.result.data,

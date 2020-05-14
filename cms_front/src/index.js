@@ -9,13 +9,14 @@ import {
 
 import Login from './component/login/login.js';
 import Home from './component/homepage/homepage.js';
+import AuthRouter from './AutoRouter.js';
 
 ReactDOM.render(
   <Router>
     <div>
       <Switch>
         <Route exact path="/" component={Login} />
-        <Route  path="/home" component={ Home } />
+        <AuthRouter  path="/home" component={ Home } />
       </Switch>
     </div>
   </Router>

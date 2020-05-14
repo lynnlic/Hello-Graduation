@@ -9,21 +9,29 @@ const layout = {
 class AddSiteModal extends React.Component {
     formRef = React.createRef();
 
-    hideModal(){
+    handleAddVlaue(){
         this.formRef.current.validateFields().then((values)=>{
-            this.props.handleAddVlaue(values);
+            var obj=Object.assign(values,{sysName:this.state.sysName})
+            console.log('--obj',obj)
+            this.props.handleAddVlaue(obj);
         })
         
     }
+
+    handSysSelect(value,key){
+        this.setState({
+            sysName:key.key
+        })
+    }
     
     render(){
-        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
+        const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
         return(
             <div>
                 <Modal
                     title='新增站点'
                     visible={this.props.visible}
-                    onOk={this.hideModal.bind(this)}
+                    onOk={this.handleAddVlaue.bind(this)}
                     onCancel={this.props.setVisible}
                     okText="提交"
                     cancelText="取消"
@@ -34,7 +42,7 @@ class AddSiteModal extends React.Component {
                             name="sysId"
                             rules={[{ required: true }]}
                         >
-                            <Select>
+                            <Select onSelect={this.handSysSelect.bind(this)}>
                                 {sysInfo.map((item, index)=>{
                                     return <Select.Option value={item.sysId} key={item.sysSaveName}>{item.sysName}</Select.Option>
                                 })}

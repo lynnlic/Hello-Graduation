@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
-import  { Form, Input, Button, Pagination, Card } from 'antd';
-import {getSysDescribe} from '../../action/systemAction.js';
+import  { Form, Input, Button, Pagination, Card, message} from 'antd';
+import {addSystem, getSysDescribeByCondition} from '../../action/systemAction.js';
+import AddSystemModal from './addSystemModal.js';
+import {url} from '../../constants/config.js';
 require('../../common.less');
 require('./system.less');
 
 const { Meta } = Card;
-
-const onFinish = values =>{
-    console.log('values',values);
-}
 
 const onFinishFailed=null;
 
@@ -20,22 +18,28 @@ class MainPage extends Component {
             total:0,
             current:1,
             pageSize:6,
+            addVisible:false,
+            loading: true,
+            key:1,
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent
         }
     } 
 
     componentDidMount(){
-        getSysDescribe(this.state.current,this.state.pageSize).then((res)=>{
+        getSysDescribeByCondition(undefined,undefined,this.state.parentId,1,this.state.pageSize).then((res)=>{
+            console.log(res);
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
                 code:res.result.code,
-                total:res.result.total
+                total:res.result.total,
+                loading: res.isFetching
             });
         })
     }
 
     onChangePage(page,pageSize){
-        getSysDescribe(page,pageSize).then((res)=>{
+        getSysDescribeByCondition(undefined, undefined, this.state.parentId, page, pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -50,26 +54,31 @@ class MainPage extends Component {
         this.props.onChangeFlag();
     }
 
+    /**
+     * 查看详情时获取点前点击的系统id
+     * @param {*} sysId 
+     */
     getCurrentSysId(sysId){
         this.props.getCurrentSysId(sysId);
     }
 
-
     createCard(){
         let cards = [];
+        console.log('!!!!',this.state.data)
         if(this.state.data!==[]){            
             this.state.data.map((item,index)=>{
                 if(item.sysId!==0){
-                    var iconName=(item.sysIconPath||"").split('\\').pop();
+                    var iconName=(item.sysIconPath||"").split('/').pop();
+                    console.log('iconname',url+'/icon/'+iconName)
                     cards.push(
                         <Card
+                            loading={this.state.loading}
                             key={item.sysId}
                             hoverable
                             style={{width:'230px'}}
                             cover={
                                 <img alt={iconName+'图标'}
-                                     className="card_cover_img"
-                                     src={require('../../images/'+(iconName===''?'unset_icon.png':iconName))}
+                                     src={url+'/icon/'+iconName}
                                 />}
                             actions={[
                                 <div>
@@ -101,8 +110,9 @@ class MainPage extends Component {
                         <img alt="增加新系统"
                             className="card_cover_img"
                             src={require('../../images/add_system_icon.png')}
+                            onClick={this.setAddVisible.bind(this)}
                         />
-                    }
+                    }                   
                 >
                     <Meta title="&nbsp;&nbsp;&nbsp;增加新系统&nbsp;&nbsp;&nbsp;" />
                 </Card>
@@ -111,28 +121,78 @@ class MainPage extends Component {
         return cards;
     }
 
+    handleAdd(values, path){
+        var creatorId=JSON.parse(sessionStorage.getItem('user')).id;
+        addSystem(values,path,this.creatorId)
+        .then((res)=>{
+            if(res.result.code===201){
+                message.success(res.result.msg);
+                this.setAddVisible();
+            } else {
+                message.error(res.result.msg);
+            }
+        })
+        .then(()=>{
+            getSysDescribeByCondition(undefined, undefined, this.state.parentId, 1, this.state.pageSize).then((res)=>{
+                this.setState({
+                    data:res.result.data,
+                    msg:res.result.msg,
+                    code:res.result.code,
+                    total:res.result.total,
+                    loading: res.isFetching,
+                    key:this.state.key+1
+                });
+            })
+        })
+    }
 
-     render(){
-         
-         return(
+    setAddVisible(){
+        this.setState({
+            addVisible: !this.state.addVisible
+        })
+    }
+
+    //搜索
+    onFinish = values =>{
+        console.log('values',values);
+        getSysDescribeByCondition(values.sysName, values.url, this.state.parentId).then((res)=>{
+            this.setState({
+                data:res.result.data,
+                msg:res.result.msg,
+                code:res.result.code,
+                total:res.result.total,
+                loading: res.isFetching,
+                key:this.state.key+1
+            })
+        })
+    }
+
+    render(){
+        return(
             <div>
                 <Form
-                        name="search_form"
-                        onFinish={onFinish}
-                        onFinishFailed={onFinishFailed}
-                        layout="inline"
-                        className="common_search_form_frame"
-                    >                        
-                        <Form.Item
-                            label="系统名称："
-                            name="sysName"
-                        >
-                            <Input />
-                        </Form.Item>                      
-                            <Button type="primary" htmlType="submit" className="common_button_width">
-                                搜  索
-                            </Button>                    
-                    </Form>
+                    name="search_form"
+                    onFinish={this.onFinish.bind(this)}
+                    onFinishFailed={onFinishFailed}
+                    layout="inline"
+                    className="common_search_form_frame"
+                >                        
+                    <Form.Item
+                        label="系统名称："
+                        name="sysName"
+                    >
+                        <Input />
+                    </Form.Item>     
+                    <Form.Item
+                        label="网址："
+                        name="url"
+                    >
+                        <Input />
+                    </Form.Item>                 
+                    <Button type="primary" htmlType="submit" className="common_button_width">
+                        搜  索
+                    </Button>                    
+                </Form>
                 <div className="card_sys_describe">
                     {this.createCard()}
                 </div>
@@ -144,6 +204,12 @@ class MainPage extends Component {
                     onChange={this.onChangePage.bind(this)}
                     total={this.state.total}
                     className="sys_pagination"
+                />
+                <AddSystemModal 
+                    visible={this.state.addVisible}
+                    handleAddVlaue={this.handleAdd.bind(this)}
+                    setVisible={this.setAddVisible.bind(this)}
+                    key={this.state.key}
                 />
             </div>
          )

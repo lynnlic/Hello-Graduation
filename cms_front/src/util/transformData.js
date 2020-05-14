@@ -1,4 +1,5 @@
 export function transformTreeData(sites,pages){
+    //debugger
     var siteTree = [];
     sites.map((item, index)=>{
         siteTree.push({title:item.siteName,key:index,children:[],selectable: false});
@@ -8,8 +9,15 @@ export function transformTreeData(sites,pages){
         siteTree.map((item,index)=>{
             if(item.title===page.siteName) position=index;
         })
-        siteTree[position].children.push({title:page.pageName,key:page.pageId})
+        if(siteTree[position]){
+            siteTree[position].children.push({
+                title:page.pageName,
+                key:page.pageId,
+                state:page.state
+                //icon:page.state!=1?<img src='../images/dot.png'/>:''
+            })
+        }        
     }
-    localStorage.setItem('treeInfo',JSON.stringify(siteTree));
+    sessionStorage.setItem('treeInfo',JSON.stringify(siteTree));
     return siteTree;
 }

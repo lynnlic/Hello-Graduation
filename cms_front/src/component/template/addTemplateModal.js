@@ -23,9 +23,6 @@ class AddTemplateModal extends React.Component {
 
     handleValue(){
         this.formRef.current.validateFields().then((values)=>{
-            /*this.props.handleAddValue(values);*/
-
-            console.log(values)
             this.props.handleAddValue(values,this.state.filePath,this.state.tags);
         })
        
@@ -38,12 +35,12 @@ class AddTemplateModal extends React.Component {
                 tags:info.file.response.data.tagList,
                 filePath:info.file.response.data.filePath
             })
-            localStorage.setItem('file',JSON.stringify(info.file))
+            sessionStorage.setItem('file',JSON.stringify(info.file))
         }
     }
     
     render(){
-        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
+        const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
         //文件上传格式
         const props = {
             accept: '.txt',

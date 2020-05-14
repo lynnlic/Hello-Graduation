@@ -5,27 +5,11 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * currentPage:当前页,
- * number:每页多少条
- */
-export function getAllPage(currentPage=1, number=10){
-    return(myfetch('/page/getPageInfo?currentPage='+currentPage+'&number='+number, 'GET'))
-    .then((res) => {return res.json(); })
-    .then((res) => {
-        console.log('user',res);
-        const data = {
-            isFetching: false,
-            result:res
-        }
-        return data;
-    })
-}
-
-/**
  * 根据条件获得页面信息
- * @param {*} values 
- * @param {*} currentPage 
- * @param {*} number 
+ * @param {*} name  页面名称
+ * @param {*} sysId 系统id
+ * @param {*} currentPage 当前页码 
+ * @param {*} number 每页条数
  */
 export function getPagesByCondition(name, sysId, currentPage=1, number=5){
     const obj={
@@ -34,7 +18,6 @@ export function getPagesByCondition(name, sysId, currentPage=1, number=5){
         currentPage:currentPage,
         number:number
     }
-    console.log('obj',obj)
     return(myfetch('/page/getPagesByCondition', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {

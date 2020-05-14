@@ -5,10 +5,11 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * 默认获取所有生成系统信息
+ * 加权限的获取系统名
+ * @param {*} cid 登陆者id
  */
-export function getAllSysName(){
-    return(myfetch('/system/getSysName', 'GET'))
+export function getSysNameByUserState(cid=0){
+    return(myfetch('/system/getSysName?cid='+cid, 'GET'))
     .then((res) => {return res.json(); })
     .then((res) => {
         const data = {

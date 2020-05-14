@@ -12,8 +12,8 @@ class Login extends Component {
           remember: false
         }
       }   
-
-    handleSubmit(values){
+    
+    onFinish = values =>{
         if(values.account){
             const promise = login(values);
             promise.then((res)=>{
@@ -24,7 +24,8 @@ class Login extends Component {
                 console.log(this.state.user)
                 const code = this.state.user.code;
                 if(code === 0){//登陆成功
-                    localStorage.setItem('user',JSON.stringify(this.state.user));
+                    sessionStorage.setItem('user',JSON.stringify(this.state.user.data));
+                    sessionStorage.setItem("isLogin", "1");
                     location.assign('/home');
                 } else {
                     Modal.error({
@@ -32,27 +33,18 @@ class Login extends Component {
                         content:this.state.user.msg
                     })
                 }
-                //if(this.state.user.)
             })      
-            
         }
     }
 
     render(){
-        const onFinish = values =>{
-            if(this.handleSubmit){
-                this.handleSubmit(values);
-            }else {//handleSubmit函数还不存在，因为会渲染两次
-                console.log('oo');
-            }
-        }
 
         return (
-            <div className="  login-frame-bg-image">
+            <div className="login-frame-bg-image">
             <div className="login-frame">
                 
 
-                <Form onFinish={onFinish}>
+                <Form onFinish={this.onFinish.bind(this)}>
                 <div className="login-text">用 户 登 录</div>
                             <Form.Item 
                                 name='account' 

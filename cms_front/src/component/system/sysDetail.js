@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import {PageHeader, Table,Divider, Tree} from 'antd';
+import React, { Component, useState } from '../../../node_modules/react';
+import {PageHeader, Table,Divider, Tree, Form, Input} from 'antd';
 import {getSysDetail, getPagesBySysid} from '../../action/systemAction.js';
 import {transformTreeData} from '../../util/transformData.js';
 require('../../common.less');
@@ -22,7 +22,6 @@ class SysDetail extends Component {
     }
 
     componentDidMount(){
-        console.log('sysid',this.props.sysId)
         getSysDetail(this.props.sysId).then((res)=>{
             this.setState({
                 detailData:res.result.data,
@@ -89,6 +88,7 @@ class SysDetail extends Component {
 
     render(){        
         const treeData=transformTreeData(this.state.sites,this.state.pages);
+        //系统信息table
         const columns = [
             {
               title: '系统名称',
@@ -124,9 +124,15 @@ class SysDetail extends Component {
               title: '创建时间',
               key: 'sysCreateTime',
               dataIndex:'sysCreateTime'
-            }
+            },
+            /*{
+                title:'操作',
+                key:'action',
+
+            }*/
           ];
 
+          //页面信息table
           const pageColumns=[{
             title:'序号',
             key:'id',
@@ -159,6 +165,40 @@ class SysDetail extends Component {
                 current: this.state.current,
                 pageSize: this.state.pageSize
             }
+            //可编辑行
+            const EditableCell = ({
+                editing,
+                dataIndex,
+                title,
+                inputType,
+                record,
+                index,
+                children,
+                ...restProps
+              }) => {
+                return (
+                  <td {...restProps}>
+                    {editing ? (
+                      <Form.Item
+                        name={dataIndex}
+                        style={{
+                          margin: 0,
+                        }}
+                        rules={[
+                          {
+                            required: true,
+                            message: `Please Input ${title}!`,
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    ) : (
+                      children
+                    )}
+                  </td>
+                );
+              };
 
         return(
             <div className="sys_detail_frame">
@@ -169,13 +209,20 @@ class SysDetail extends Component {
                     key='pageHeader'
                 />
                 <div className="common_table_frame">
+                <Form>
                     <Table 
                         bordered 
                         columns={columns} 
                         dataSource={this.state.detailData?this.state.detailData:[]}
                         pagination={false}
                         key='detailTable'
+                        components={{
+                            /*body: {
+                              cell: EditableCell,
+                            },*/
+                          }}
                     />  
+                </Form>
                 </div>
                 <Divider key='divider1' style={{backgroundColor:'#17cccc'}} />
                 <div className="sys_tree_line_frame">

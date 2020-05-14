@@ -23,12 +23,13 @@ class Site extends Component{
             addVisible:false,
             key:0,
             searchSysId:undefined,
-            searchName:undefined
+            searchName:undefined,
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent
         }
     }
 
     componentDidMount(){
-        getSiteByCondition(undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
+        getSiteByCondition(undefined,undefined,this.state.parentId,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -39,7 +40,7 @@ class Site extends Component{
     }
 
     onChangePage=(page,pageSize)=>{
-        getSiteByCondition(this.state.searchSysId,this.state.searchName,page,pageSize).then((res)=>{
+        getSiteByCondition(this.state.searchSysId,this.state.searchName,this.state.parentId,page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -66,7 +67,7 @@ class Site extends Component{
                 message.error(res.result.msg);
             } 
         }).then(
-            getSiteByCondition(undefined,undefined,1,this.state.pageSize).then((res)=>{
+            getSiteByCondition(undefined,undefined,this.state.parentId,1,this.state.pageSize).then((res)=>{
                 console.log(res);
                 this.setState({
                     data:res.result.data,
@@ -82,8 +83,7 @@ class Site extends Component{
     }
 
     onFinish = values =>{
-        console.log('values',values);
-        getSiteByCondition(values.sysId,values.siteName).then((res)=>{
+        getSiteByCondition(values.sysId,values.siteName,this.state.parentId).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -97,7 +97,7 @@ class Site extends Component{
     }
 
     render(){
-        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
+        const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
         const columns = [
             {
               title: '序号',
@@ -135,7 +135,6 @@ class Site extends Component{
               render: (text, record) => (
                 <span>
                   <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
-                  <a>Delete</a>
                 </span>
               ),
             },

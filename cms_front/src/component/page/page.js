@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import { Form, Input, Button, Table, Select, message} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getAllPage,getPagesByCondition,deletePage} from '../../action/pageAction.js'
+import {getPagesByCondition,deletePage} from '../../action/pageAction.js'
 require('../../common.less');
 require('./page.less');
 
@@ -27,7 +27,7 @@ class Page extends Component{
     }
 
     componentDidMount(){
-        getAllPage(this.state.current,this.state.pageSize).then((res)=>{
+        getPagesByCondition(undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -38,7 +38,7 @@ class Page extends Component{
     }
 
     onChangePage=(page,pageSize)=>{
-        getAllPage(page,pageSize).then((res)=>{
+        getPagesByCondition(this.state.searchPageName,this.state.sysId,page,pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -50,7 +50,6 @@ class Page extends Component{
     }
 
     onFinish = values =>{
-        console.log('values',values);
         getPagesByCondition(values.name,values.sysId).then((res)=>{
             console.log(res);
             this.setState({
@@ -97,7 +96,7 @@ class Page extends Component{
     }
 
     render(){
-        const sysInfo=JSON.parse(localStorage.getItem('sysName'));
+        const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
         const columns = [
             {
               title: '序号',
@@ -139,6 +138,20 @@ class Page extends Component{
                 key: 'createTime',
                 dataIndex: 'createTime',
               },
+              {
+                title: '页面状态',
+                key: 'state',
+                dataIndex: 'state',
+                render:(text)=>{
+                    if(text==0){
+                        return <span>未生成</span>
+                    } else if(text==1){
+                        return <span>已生成</span>
+                    } else if(text==2){
+                        return <span>已修改还未提交</span>
+                    }
+                }
+              },
             {
               title: '操作',
               key: 'action',
@@ -146,7 +159,7 @@ class Page extends Component{
                 <span>
                   <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
                   <a onClick={this.deletePage.bind(this,record.pageId,record.pagePath)}>删除页面 </a>
-                  <a  onClick={this.loadLoaclFile.bind(this,record.pageId,record.pagePath)}>查看模板</a>
+                  <a  onClick={this.loadLoaclFile.bind(this,record.pageId,record.pagePath)}>查看页面</a>
                 </span>
               ),
             },

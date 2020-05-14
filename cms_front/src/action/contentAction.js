@@ -5,11 +5,10 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * currentPage:当前页,
- * number:每页多少条
+ * 根据站点id获取内容
  */
-export function getAllData(currentPage=1, number=5){
-    return(myfetch('/content/getData?currentPage='+currentPage+'&number='+number, 'GET'))
+export function getDataBySiteId(siteId){
+    return(myfetch('/content/getDataBySiteId?siteId='+siteId, 'GET'))
     .then((res) => {return res.json(); })
     .then((res) => {
         const data = {
@@ -21,13 +20,69 @@ export function getAllData(currentPage=1, number=5){
 }
 
 /**
- * 根据站点id获取内容
+ * 根据条件得到内容
+ * @param {*} contentTitle 内容标题
+ * @param {*} siteName 站点名
+ * @param {*} sysId 系统id
+ * @param {*} currentPage 当前页
+ * @param {*} number 每页条数
  */
-export function getDataBySiteId(siteId){
-    return(myfetch('/content/getDataBySiteId?siteId='+siteId, 'GET'))
+export function getDataByCondition(contentTitle,siteName,sysId,parentId,currentPage=1, number=5){
+    const obj={
+        contentTitle:contentTitle===''?undefined:contentTitle,
+        siteName:siteName===''?undefined:siteName,
+        sysId:sysId,
+        parentId:parentId,
+        currentPage:currentPage,
+        number:number
+    }
+    return(myfetch('/content/getDataByCondition', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {
         const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+export function loadLocalContent(path,type){
+    const obj = {
+        path:path,
+        type:type
+    }
+    return(myfetch('/content/loadLocalContent', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        console.log(res);
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ * 增加内容
+ * @param {*} value 
+ * @param {*} path
+ * @param {*} creatorId  
+ */
+export function addContent(value,path,creatorId){
+    const obj={
+        title:value.contentName,
+        siteId:value.siteId,
+        path:path,
+        describe:value.contentDescribe,
+        creatorId:creatorId
+    }
+    return(myfetch('/content/addContent', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        console.log('res',res);
+        const data = { 
             isFetching: false,
             result:res
         }

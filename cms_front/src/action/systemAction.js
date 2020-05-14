@@ -5,11 +5,23 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * currentPage:当前页,
- * number:每页多少条
+ * 获得系统简介
+ * @param {*} sysName 
+ * @param {*} url 
+ * @param {*} parentId 用于权限
+ * @param {*} currentPage 
+ * @param {*} number 
  */
-export function getSysDescribe(currentPage=1, number=6){
-    return(myfetch('/system/getSysDescribe?currentPage='+currentPage+'&number='+number, 'GET'))
+export function getSysDescribeByCondition(sysName, url, parentId, currentPage=1, number=6){
+    const obj={
+        sysName:sysName,
+        url: url,
+        parentId:parentId,
+        currentPage: currentPage,
+        number: number
+    }
+    console.log('ovj',obj)
+    return(myfetch('/system/getSysDescribeByCondition', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {
         const data = {
@@ -41,6 +53,29 @@ export function getPagesBySysid(sysId){
     .then((res) => {return res.json(); })
     .then((res) => {
         const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+export function addSystem(values, path, creatorId){
+    const obj={
+        copyRight:values.copyRight,
+        email:values.email,
+        phone:values.phone,
+        saveName:values.saveName,
+        sysName:values.sysName,
+        url:values.url,
+        path:path,
+        creatorId:creatorId
+    }
+    return(myfetch('/system/addSystem', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        console.log('res',res);
+        const data = { 
             isFetching: false,
             result:res
         }
