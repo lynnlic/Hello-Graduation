@@ -46,3 +46,16 @@ export function getUserByCondition(account,name,parentId,currentPage=1, number=1
         return data;
     })
 }
+
+export function editUser(values){
+    console.log('values',values);
+    return(myfetch('/user/editUser', 'POST',JSON.stringify(values)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}

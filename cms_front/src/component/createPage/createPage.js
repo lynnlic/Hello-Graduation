@@ -6,7 +6,7 @@ import {getPagesBySysid} from '../../action/systemAction.js';
 import {transformTreeData} from '../../util/transformData.js';
 import {getTemplateBySysid, getTagsByTemplateId} from '../../action/templateAction.js';
 import {getDataBySiteId} from '../../action/contentAction.js';
-import {uploadPageInfo,createNewPage,getSavedPageInfo, downloadFile} from '../../action/createPageAction.js';
+import {uploadPageInfo,createNewPage,getSavedPageInfo, downloadFile, uploadEditPageInfo} from '../../action/createPageAction.js';
 import AddContent from './addContent.js';
 require('../../common.less');
 require('./createPage.less');
@@ -64,15 +64,17 @@ class CreatePage extends Component {
             selectedSys:'',
             realUrl:'',
             realPath:'',
+            realSysId:null,
+            realSiteId:null,
+            realTemplateId:null,
             tags:[],
             addContent:[],
             selectedTags:[],
-            savedPageinfo:{},
+            savedPageinfo:{},//树形结构中的页面信息
             modalVisible:false,//下载提示框弹框是否可见
             sysSaveName:undefined,//当前系统用于存储的文件夹名称
             sysId:0,//当前选择的系统的id
-
-            b:[]
+            flag:true,//编辑还是新增的状态 true：新增 false：修改
         }
     }
 
@@ -87,10 +89,9 @@ class CreatePage extends Component {
                 selectedSys:key.children,
                 realUrl:url.join('/'),
                 realPath:path.join('/'),
+                realSysId:value,
                 sysSaveName:key.key,
-                sysId:value,
-
-                b:[]
+                sysId:value
             })
         });
         getTemplateBySysid(value).then((res)=>{
@@ -109,7 +110,10 @@ class CreatePage extends Component {
             this.setState({
                 datas:res.result.data,
                 realUrl:url.join('/'),
-                realPath:path.join('/')
+                realPath:path.join('/'),
+                realSiteId:value,
+                savedPageinfo:{},
+                flag:true
             })
         })
     }
@@ -119,7 +123,10 @@ class CreatePage extends Component {
         console.log('values',value);
         getTagsByTemplateId(value).then((res)=>{
             this.setState({
-                tags:res.result.data.split(';')
+                tags:res.result.data.split(';'),
+                realTemplateId:value,
+                savedPageinfo:{},
+                flag:true
             })
         })
     }
@@ -153,15 +160,30 @@ class CreatePage extends Component {
         
     }
 
+    /**
+     * 点击树形中的页面名称获得页面信息
+     * @param {*} selectedKeys 
+     * @param {*} e 
+     */
     handleTreeSelect(selectedKeys, e){
-        //选中的页面的id
-        var selectedId=selectedKeys[0];
-        getSavedPageInfo(selectedKeys[0]).then((res)=>{
-            console.log('---res',res)
+        console.log('---selectedKeys',selectedKeys)
+        if(selectedKeys.length>0){
+            //选中的页面的id
+            var selectedId=selectedKeys[0];
+            getSavedPageInfo(selectedKeys[0]).then((res)=>{
+                console.log('res',res);
+                this.setState({
+                    savedPageinfo:res.result.data,
+                    flag:false
+                })
+            });
+        } else {
             this.setState({
-                savedPageinfo:res.result.data
+                savedPageinfo:{},
+                flag:true
             })
-        });
+        }
+        
     }
 
     downloadPages(){
@@ -180,20 +202,24 @@ class CreatePage extends Component {
         path[3]=e.target.value+'.html';
         this.setState({
             realUrl:url.join('/'),
-            realPath:path.join('/')
+            realPath:path.join('/'),
+            realName:e.target.value
         })
-
     }
 
     onFinish = values =>{
+        console.log('form-value',values);        
         //登录者的id
         var id=JSON.parse(sessionStorage.getItem('user')).id;
         var obj = {
-            ...values,
+            sysId:this.state.realSysId,
+            siteId:this.state.realSiteId,
+            templateId:this.state.realTemplateId,
             'content':selectedTags,
             'url':this.state.realUrl,
             'path':this.state.realPath,
-            'cId':id
+            'cId':id,
+            pageFileName:this.state.realName
         }
         console.log('---value',values)
         uploadPageInfo(obj).then((res)=>{
@@ -213,19 +239,23 @@ class CreatePage extends Component {
         })
     }
 
-    /*addComponent(){
-        createComponent.push(
-            <AddContent  
-                data={this.state.datas}
-                tags={this.state.tags}
-            />
-        )
-        console.log('createComponent',createComponent);
-        this.setState({
-            b:createComponent2
+    onEditFinish(){
+        uploadEditPageInfo(this.state.savedPageinfo.pageId,selectedTags).then((res)=>{
+            if(res.result.code==207){
+                message.success(res.result.msg);
+                getPagesBySysid(this.state.realSysId).then((res)=>{
+                    this.setState({
+                        sites:res.result.data[0],
+                        pages:res.result.data[1],
+                        realPath:''
+                    })
+                });
+                this.formRef.current.resetFields();
+            } else {
+                message.error(res.result.msg);
+            }
         })
-    }*/
-
+    }
 
     render(){
         const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
@@ -241,21 +271,19 @@ class CreatePage extends Component {
                 }
             })
         })
+
         const options=sysInfo.map((item, index)=>{
             return <Option value={item.sysId+''} key={item.sysSaveName}>{item.sysName}</Option>
         })
         const siteOptions=this.state.sites.map((item)=>{
-            //console.log(item.siteId+'')
             return <Option value={item.siteId+''} key={item.siteUrl}>{item.siteName}</Option>
         })
         const contentOptions=this.state.datas.map((item)=>{
-            return <Option value={item.id} key={item.id}>{item.title}</Option>
+            return <Option value={item.id+''} key={item.id}>{item.title}</Option>
         })
         const tagsOptions=this.state.tags.map((item)=>{
             return <Option value={item} key={item}>{item}</Option>
         })   
-
-        //console.log('----',this.state.savedPageinfo?this.state.savedPageinfo.siteId+'':undefined)
         
         return(
             <div className="common_content_frame">
@@ -293,41 +321,44 @@ class CreatePage extends Component {
                             onFinish={this.onFinish.bind(this)}
                             className="createPage_form"
                             ref={this.formRef}
+                            name="control-ref"
                         >
-                            <Form.Item label='所属系统:' name='sysId'>
+                            <Form.Item label='所属系统:'>
                                 <Select                                    
                                     onSelect={this.handleSelect.bind(this)}
-                                    //value={this.state.selectedSys} 
-                                    key='sysSelect'
                                     name='sysSelect'
-                                    //value={this.state.savedPageinfo?this.state.savedPageinfo.systemId+'':undefined}
+                                    value={this.state.savedPageinfo.systemId?this.state.savedPageinfo.systemId+'':this.state.realSysId}
                                 >
                                     {options}
                                 </Select>
                             </Form.Item>
-                            <Form.Item label='所属站点:' name='siteId'>
+                            <Form.Item label='所属站点:'>
                                 <Select
-                                    value='----'
                                     onSelect={this.handleSiteSelect.bind(this)}
                                     name='siteId'
-                                    //value={this.state.savedPageinfo.siteId+''}
-                                    
+                                    value={this.state.savedPageinfo.siteId?this.state.savedPageinfo.siteId+'':this.state.realSiteId}
+                                    disabled={!this.state.flag}
                                 >
                                     {siteOptions}
                                 </Select>
                             </Form.Item>
-                            <Form.Item label='所用模板:' name='templateId'>
-                                <Select onSelect={this.handleTemSelect.bind(this)}>
+                            <Form.Item label='所用模板:'>
+                                <Select 
+                                    onSelect={this.handleTemSelect.bind(this)}
+                                    value={this.state.savedPageinfo.templateId?this.state.savedPageinfo.templateId+'':this.state.realTemplateId}
+                                    disabled={!this.state.flag}
+                                >
                                 {this.state.templates.map((item)=>{
-                                    return <Option value={item.templateId} key={item.templateId}>{item.templateName}</Option>
+                                    return <Option value={item.templateId+''} key={item.templateId}>{item.templateName}</Option>
                                 })}
                                 </Select>
                             </Form.Item>
-                            <Form.Item label='页面名称:' name='pageFileName'>
+                            <Form.Item label='页面名称:'>
                                 <Input 
                                     onChange={this.onChangeFileName.bind(this)}
                                     name="pageFileName"
-                                    //value={this.state.savedPageinfo?this.state.savedPageinfo.fileName:undefined}
+                                    value={this.state.savedPageinfo.fileName?this.state.savedPageinfo.fileName:undefined}
+                                    disabled={!this.state.flag}
                                 />
                             </Form.Item>
                             <Form.Item label='访问路径:'>
@@ -345,7 +376,8 @@ class CreatePage extends Component {
                                 />
                             </Form.Item>
                             <span className="right_addContent_text">&nbsp;添加内容:</span>
-                            <Form.List name='content'>
+                            {this.state.flag?
+                                <Form.List name='content'>
                                 {(fields, {add, remove})=>{                                   
                                     return(
                                         <div>
@@ -367,7 +399,7 @@ class CreatePage extends Component {
                                                                 }}
                                                                 />
                                                             ) : null}
-                                                   </div>
+                                                </div>
                                                 )
                                             })}
                                         
@@ -383,15 +415,39 @@ class CreatePage extends Component {
                                             </Button>
                                         </Form.Item>
                                         </div>
-                                    )
-                                }}                                
-                            </Form.List>
-                            
-                            <Form.Item>
+                                        )
+                                    }}                                
+                                </Form.List>
+                            :
+                            <div>
+                                {
+                                 this.state.savedPageinfo.content.map((item,index)=>{
+                                     console.log('------',this.state.savedPageinfo)
+                                     return (
+                                        <AddContent 
+                                            editData={this.state.savedPageinfo.content[index].dataId}
+                                            editTags={this.state.savedPageinfo.content[index].tag}
+                                            data={this.state.savedPageinfo.dataList}
+                                            tags={this.state.savedPageinfo.tagList.split(';')}
+                                            flag={!this.state.flag}
+                                            handleTagsSelect={this.handleTagsSelect.bind(this)}
+                                        />
+                                     )
+                                 })
+                                }
+                            </div>
+                        }
+                        <Form.Item>
+                            {this.state.flag?
                                 <Button  type="primary" htmlType="submit">
                                     提交申请
                                 </Button>
-                            </Form.Item>
+                            :
+                                <Button  type="primary" onClick={this.onEditFinish.bind(this)}>
+                                    提交修改
+                                </Button>
+                            }
+                        </Form.Item>
                         </Form>
                     </div>
                 </div>

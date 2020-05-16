@@ -58,6 +58,22 @@ export function getSavedPageInfo(pageId){
     })
 }
 
+export function uploadEditPageInfo(pageId,selectedTags=[]){
+    var obj={
+        pageId:pageId,
+        content:selectedTags
+    }
+    return(myfetch('/page/uploadEditPageInfo', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
 export function downloadFile(sysName){
     var obj={
         sysName:"apple"
