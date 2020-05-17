@@ -27,7 +27,7 @@ export function getDataBySiteId(siteId){
  * @param {*} currentPage 当前页
  * @param {*} number 每页条数
  */
-export function getDataByCondition(contentTitle,siteName,sysId,parentId,currentPage=1, number=5){
+export function getDataByCondition(contentTitle,siteName,sysId,parentId,currentPage=1, number=8){
     const obj={
         contentTitle:contentTitle===''?undefined:contentTitle,
         siteName:siteName===''?undefined:siteName,
@@ -79,6 +79,29 @@ export function addContent(value,path,creatorId){
         creatorId:creatorId
     }
     return(myfetch('/content/addContent', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = { 
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ * 内容修改
+ * @param {*} textValue 
+ * @param {*} contentId 
+ */
+export function updateContent(textValue='', contentId=0, path){
+    var obj={
+        textValue:textValue,
+        contentId:contentId,
+        path:path
+    }
+    console.log('obj',obj)
+    return(myfetch('/content/updateContent', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {
         console.log('res',res);

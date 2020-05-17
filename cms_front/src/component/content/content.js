@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, Table,Select,message} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getDataByCondition,loadLocalContent,addContent} from '../../action/contentAction.js';
+import {getDataByCondition,loadLocalContent,addContent, updateContent} from '../../action/contentAction.js';
 import FileViewModal from '../../util/fileViewModal.js';
 import AddContentModal from './addContentModal.js';
 require('../../common.less');
@@ -55,7 +55,6 @@ class Content extends Component{
     }
 
     onFinish = values =>{
-        console.log('values',values);
         getDataByCondition(values.contentTitle,values.siteName,values.sysId,this.state.parentId).then((res)=>{
             this.setState({
                 data:res.result.data,
@@ -84,23 +83,25 @@ class Content extends Component{
         })
     }
 
-    loadLoaclFile(path,type){
-        if(type!=='txt'){
+    loadLoaclFile(record){
+        if(record.type!=='txt'){
             this.setState({
-                img:path,
+                img:record.path,
                 fileVisible:true,
-                type:type
+                type:record.type,
             })
         } else {
-            loadLocalContent(path,type).then((res)=>{
+            loadLocalContent(record.path,record.type).then((res)=>{
                 if(res.result.code==203){
                     message.error(res.result.msg)
                 } else if(res.result.code==200){
-                    if(type==='txt'){
+                    if(record.type==='txt'){
                         this.setState({
                             fileVisible:true,
                             fileData:res.result.data,
-                            type:type
+                            type:record.type,
+                            editContentId:record.id,
+                            editPath:record.path
                         })
                     } 
                 }
@@ -109,10 +110,8 @@ class Content extends Component{
     }
 
     handleAddVlaue(values,path){
-        console.log('values',values,'---path',path);
         var userId=JSON.parse(sessionStorage.getItem("user")).data.id;
         addContent(values,path,userId).then((res)=>{
-            console.log('----',res);
             if(res.result.code===201){
                 message.success(res.result.msg);
             } else {
@@ -130,6 +129,31 @@ class Content extends Component{
                 })
             })
         });
+    }
+
+    /**
+     * 内容修改
+     * @param {*} textValue 
+     */
+    handleFileEdit(textValue=''){
+        updateContent(textValue, this.state.editContentId,this.state.editPath).then((res)=>{
+            if(res.result.code===207){
+                message.success(res.result.msg);
+                this.setFileVisible();
+                getDataByCondition(this.state.searchTitle,this.state.searchSite,
+                    this.state.searchSysId,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
+            } else {
+                message.error(res.result.msg);
+            }
+        })
     }
 
     render(){
@@ -150,7 +174,6 @@ class Content extends Component{
               dataIndex: 'path',
               key: 'path',
               render:(text,record)=>{
-                  console.log('text',record);
                   var index=text.lastIndexOf('.');
                   var result=text.substring(index+1,text.length);
                   Object.assign(record,{'type':result});
@@ -189,7 +212,7 @@ class Content extends Component{
                 <span>
                   <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
                   <a>删除 </a>
-                  <a onClick={this.loadLoaclFile.bind(this,record.path,record.type)}>查看内容</a>
+                  <a onClick={this.loadLoaclFile.bind(this,record)}>编辑/查看内容</a>
                 </span>
               ),
             },
@@ -262,6 +285,7 @@ class Content extends Component{
                     key={this.state.key}
                     img={this.state.img}
                     type={this.state.type}
+                    handleFileEdit={this.handleFileEdit.bind(this)}
                 />
                 <AddContentModal 
                     visible={this.state.addVisible}
