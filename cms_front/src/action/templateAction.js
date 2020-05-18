@@ -5,23 +5,6 @@ import 'fetch-ie8/fetch.js';
 import { myfetch } from '../util/myfetch';
 
 /**
- * currentPage:当前页,
- * number:每页多少条
- */
-export function getAllTemplate(currentPage=1, number=5){
-    return(myfetch('/template/getAllTemplate?currentPage='+currentPage+'&number='+number, 'GET'))
-    .then((res) => {return res.json(); })
-    .then((res) => {
-        console.log('content',res);
-        const data = {
-            isFetching: false,
-            result:res
-        }
-        return data;
-    })
-}
-
-/**
  * 根据系统id获取其模板
  */
 export function getTemplateBySysid(sysId){
@@ -45,7 +28,7 @@ export function getTemplateBySysid(sysId){
  * @param {*} currentPage 
  * @param {*} number 
  */
-export function getTemplateByCondition(sysId,templateName,state,parentId,currentPage=1, number=5){
+export function getTemplateByCondition(sysId,templateName,state,parentId,currentPage=1, number=8){
     const obj={
         sysId:sysId,
         templateName:templateName==""?undefined:templateName,
@@ -124,6 +107,56 @@ export function getTagsByTemplateId(id){
     .then((res) => {return res.json(); })
     .then((res) => {
         console.log('res',res);
+        const data = { 
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+/**
+ * 重新上传模板
+ * @param {*} temId 
+ * @param {*} data 
+ */
+export function editTemFile(temId, data){
+    var obj={
+        templateId:temId,
+        filePath:data.filePath,
+        tagList:data.tagList.join(';')
+    }
+    return(myfetch('/template/editTemplate', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = { 
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+export function editTemplate(values){
+    return(myfetch('/template/editTemplate', 'POST', JSON.stringify({...values})))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = { 
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+export function editState(templateId ,state){
+    var obj={
+        templateId:templateId,
+        state:state==0?1:0
+    }
+    return(myfetch('/template/editTemplate', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
         const data = { 
             isFetching: false,
             result:res

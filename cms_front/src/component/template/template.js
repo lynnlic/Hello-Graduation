@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Select, message, Modal} from 'antd';
+import { Form, Input, Button, Table, Select, message, Modal, Popconfirm} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getTemplateByCondition, loadLocalTemplate, AddTemplate} from '../../action/templateAction.js';
+import {getTemplateByCondition, loadLocalTemplate, AddTemplate, editTemFile, editTemplate, editState} from '../../action/templateAction.js';
 import AddTemplateModal from './addTemplateModal.js';
+import ReUploadModal from './reUploadModal.js';
 import FileViewModal from '../../util/fileViewModal.js';
+import EditTemplateModal from './editTEmplateModal.js';
 require('../../common.less');
 
 
@@ -20,7 +22,7 @@ class Template extends Component{
         this.state={
             data:[],
             current:1,
-            pageSize:4,
+            pageSize:8,
             total:0,
             key: 0,
             addVisible:false,
@@ -31,7 +33,11 @@ class Template extends Component{
             fileVisible:false, //“查看模板框”是够可见
             fileData:'',
             type:'txt',
-            parentId:JSON.parse(sessionStorage.getItem('user')).parent
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent,
+            uploadVisible:false,//重新上传模板框是否可见
+            editVisible:false,//修改弹框是否可见
+            editValue:{},//修改框中默认出现的数据
+            editModalKey:0,//修改弹框的key值
         }
     }
 
@@ -93,6 +99,37 @@ class Template extends Component{
         })
     }
 
+    /**
+     * 设置重新上传模板文件弹框是否可见
+     * @param {*} record 
+     */
+    setUploadVisible(record){
+        this.setState({
+            uploadVisible:!this.state.uploadVisible,
+            editTemId:record.templateId
+        })
+    }
+
+    /**
+     * 设置修改模板信息弹框是否可见
+     * @param {*} record 
+     */
+    setEditVisible(record){
+        if(record){
+            this.setState({
+                editVisible:!this.state.editVisible,
+                editTemId:record.templateId,
+                editValue:record,
+                editModalKey:this.state.editModalKey+1
+            })
+        } else {
+            this.setState({
+                editVisible:!this.state.editVisible,
+                editModalKey:this.state.editModalKey+1
+            })
+        }
+    }
+
     handleAddValue(values,filePath,tagList){
         //登录者的id
         var id=JSON.parse(sessionStorage.getItem('user')).id;
@@ -117,6 +154,46 @@ class Template extends Component{
         this.setVisible();
     }
 
+    handleEditValue(values){
+        editTemplate(values).then((res)=>{
+            if(res.result.code==207){
+                message.success(res.result.msg);
+                this.setEditVisible();
+                getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
+            } else {
+                message.error(res.result.msg);
+            }
+        })
+    }
+
+    handleEditState(record){
+        editState(record.templateId,record.state).then((res)=>{
+            if(res.result.code==207){
+                message.success(res.result.msg);
+                getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
+            } else {
+                message.error(res.result.msg);
+            }
+        })
+
+    }
+
     loadLoaclFile(path ){
         var type=path.split('.').pop();
         loadLocalTemplate(path).then(res=>{
@@ -128,9 +205,14 @@ class Template extends Component{
                     fileVisible:true,
                     fileData:res.result.data,
                     type:type
-                    //filePath:res.result.data.filePath
                 })
             }
+        })
+    }
+
+    reUploadFile(fileData){
+        editTemFile(this.state.editTemId, fileData).then((res)=>{
+
         })
     }
 
@@ -194,10 +276,29 @@ class Template extends Component{
               render: (text, record) =>{
                   return (
                       <span>
-                  <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
-                  <a>删除 </a>
-                  <a  onClick={this.loadLoaclFile.bind(this,record.templatePath)}>查看模板</a>
-                </span>
+                        <a style={{ marginRight: 16 }} onClick={this.setEditVisible.bind(this, record)}>编辑 {record.name}</a>
+                        <a style={{ marginRight: 16 }} onClick={this.setUploadVisible.bind(this, record)}>重新上传 </a>
+                        {record.state==0?
+                        <Popconfirm
+                            title='确定锁定该模板吗？'
+                            onConfirm={this.handleEditState.bind(this,record)}
+                            cancelText='取消'
+                            okText='确定'
+                        >
+                            <a style={{ marginRight: 25 }}>锁定模板</a>
+                        </Popconfirm>
+                        :
+                        <Popconfirm
+                            title='确定解锁该模板吗？'
+                            onConfirm={this.handleEditState.bind(this,record)}
+                            cancelText='取消'
+                            okText='确定'
+                        >
+                            <a style={{ marginRight: 25 }}>解锁模板</a>
+                        </Popconfirm>
+                    }
+                        <a onClick={this.loadLoaclFile.bind(this,record.templatePath)}>查看模板</a>
+                      </span>
                   )
               } 
             },
@@ -277,6 +378,17 @@ class Template extends Component{
                     title='查看模板'
                     type={this.state.type}
                     key={this.state.fileContentKey}
+                />
+                <ReUploadModal
+                    visible={this.state.uploadVisible}
+                    reUploadFile={this.reUploadFile.bind(this)}
+                    setVisible={this.setUploadVisible.bind(this)}
+                />
+                <EditTemplateModal 
+                    visible={this.state.editVisible}
+                    setVisible={this.setEditVisible.bind(this)}
+                    handleEditValue={this.handleEditValue.bind(this)}
+                    value={this.state.editValue}
                 />
             </div>
         )

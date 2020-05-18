@@ -100,11 +100,26 @@ export function updateContent(textValue='', contentId=0, path){
         contentId:contentId,
         path:path
     }
-    console.log('obj',obj)
     return(myfetch('/content/updateContent', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {
-        console.log('res',res);
+        const data = { 
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
+
+
+export function deleteContent(contentId=0, path=''){
+    var obj={
+        contentId:contentId,
+        path:path
+    }
+    return(myfetch('/content/deleteContent', 'POST', JSON.stringify(obj)))
+    .then((res) => {return res.json(); })
+    .then((res) => {
         const data = { 
             isFetching: false,
             result:res

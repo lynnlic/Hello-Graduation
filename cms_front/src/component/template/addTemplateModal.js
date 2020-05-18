@@ -8,8 +8,6 @@ const layout = {
     wrapperCol: { span: 16 },
 };
 
-
-
 class AddTemplateModal extends React.Component {
     constructor(props){
         super(props);

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table,Select,message} from 'antd';
+import { Form, Input, Button, Table,Select,message, Popconfirm} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {getDataByCondition,loadLocalContent,addContent, updateContent} from '../../action/contentAction.js';
+import {getDataByCondition,loadLocalContent,addContent, updateContent, deleteContent} from '../../action/contentAction.js';
 import FileViewModal from '../../util/fileViewModal.js';
 import AddContentModal from './addContentModal.js';
 require('../../common.less');
@@ -156,6 +156,26 @@ class Content extends Component{
         })
     }
 
+    deleteContent(record){
+        deleteContent(record.id,record.path).then((res)=>{
+            if(res.result.code===204){
+                message.success(res.result.msg);
+                getDataByCondition(this.state.searchTitle,this.state.searchSite,
+                    this.state.searchSysId,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
+            } else {
+                message.error(res.result.msg);
+            }
+        })
+    }
+
     render(){
         const sysInfo=JSON.parse(sessionStorage.getItem('sysName'));
         const columns = [
@@ -210,8 +230,14 @@ class Content extends Component{
               key: 'action',
               render: (text, record) => (
                 <span>
-                  <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
-                  <a>删除 </a>
+                    <Popconfirm
+                            title='确定删除该内容？'
+                            onConfirm={this.deleteContent.bind(this,record)}
+                            cancelText='取消'
+                            okText='确定'
+                        >
+                        <a style={{ marginRight: 16 }} >删除 </a>
+                    </Popconfirm>
                   <a onClick={this.loadLoaclFile.bind(this,record)}>编辑/查看内容</a>
                 </span>
               ),
