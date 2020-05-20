@@ -9,6 +9,7 @@ import { myfetch } from '../util/myfetch';
  * @param {*} obj 
  */
 export function uploadPageInfo(obj){
+    console.log('----***', obj)
     return(myfetch('/page/uploadPageInfo', 'POST', JSON.stringify(obj)))
     .then((res) => {return res.json(); })
     .then((res) => {

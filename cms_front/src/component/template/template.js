@@ -5,7 +5,7 @@ import {getTemplateByCondition, loadLocalTemplate, AddTemplate, editTemFile, edi
 import AddTemplateModal from './addTemplateModal.js';
 import ReUploadModal from './reUploadModal.js';
 import FileViewModal from '../../util/fileViewModal.js';
-import EditTemplateModal from './editTEmplateModal.js';
+import EditTemplateModal from './editTemplateModal.js';
 require('../../common.less');
 
 
@@ -137,21 +137,20 @@ class Template extends Component{
         .then((res)=>{
             if(res.result.code==201){
                 message.success(res.result.msg);
+                this.setVisible();
+                getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
             } else {
                 message.error(res.result.msg);
             }
-        }).then(
-            getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
-                this.setState({
-                    data:res.result.data,
-                    msg:res.result.msg,
-                    code:res.result.code,
-                    total:res.result.total,
-                    current:1
-                })
-            })
-        );
-        this.setVisible();
+        })
     }
 
     handleEditValue(values){
@@ -197,7 +196,6 @@ class Template extends Component{
     loadLoaclFile(path ){
         var type=path.split('.').pop();
         loadLocalTemplate(path).then(res=>{
-            console.log(res);
             if(res.result.code==203){
                 message.error(res.result.msg)
             } else if(res.result.code==200){
@@ -212,7 +210,20 @@ class Template extends Component{
 
     reUploadFile(fileData){
         editTemFile(this.state.editTemId, fileData).then((res)=>{
-
+            if(res.result.code==203){
+                message.error(res.result.msg)
+            } else if(res.result.code==200){
+                message.success(res.result.msg)
+                getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
+            }
         })
     }
 

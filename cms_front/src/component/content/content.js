@@ -27,6 +27,7 @@ class Content extends Component{
             key:0,
             img:undefined,
             addVisible:false,
+            addKey:0,
             parentId:JSON.parse(sessionStorage.getItem('user')).parent
         }
     }
@@ -79,7 +80,7 @@ class Content extends Component{
     setAddVisible(){
         this.setState({
             addVisible:!this.state.addVisible,
-            fileContentKey: this.state.key+1
+            addKey: this.state.addKey+1
         })
     }
 
@@ -110,7 +111,7 @@ class Content extends Component{
     }
 
     handleAddVlaue(values,path){
-        var userId=JSON.parse(sessionStorage.getItem("user")).data.id;
+        var userId=JSON.parse(sessionStorage.getItem("user")).id;
         addContent(values,path,userId).then((res)=>{
             if(res.result.code===201){
                 message.success(res.result.msg);
@@ -315,7 +316,7 @@ class Content extends Component{
                 />
                 <AddContentModal 
                     visible={this.state.addVisible}
-                    key={this.state.fileContentKey}
+                    key={this.state.addKey}
                     setVisible={this.setAddVisible.bind(this)}
                     handleAddVlaue={this.handleAddVlaue.bind(this)}
                 />

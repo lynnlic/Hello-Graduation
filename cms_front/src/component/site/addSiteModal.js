@@ -11,8 +11,7 @@ class AddSiteModal extends React.Component {
 
     handleAddVlaue(){
         this.formRef.current.validateFields().then((values)=>{
-            var obj=Object.assign(values,{sysName:this.state.sysName})
-            console.log('--obj',obj)
+            var obj=Object.assign(values,{sysName:this.state.sysName});
             this.props.handleAddVlaue(obj);
         })
         

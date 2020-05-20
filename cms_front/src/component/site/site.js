@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import {Select, Form, Input, Button, Table, message} from 'antd';
 import Navigation from '../../container/navigation.js';
-import {addSite, getSiteByCondition} from '../../action/siteAction.js';
+import {addSite, getSiteByCondition, editSite} from '../../action/siteAction.js';
 import AddSiteModal from './addSiteModal.js';
+import EditSiteModal from './editSiteModal.js';
 require('../../common.less');
 
 const layout = {
@@ -24,7 +25,10 @@ class Site extends Component{
             key:0,
             searchSysId:undefined,
             searchName:undefined,
-            parentId:JSON.parse(sessionStorage.getItem('user')).parent
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent,
+            editVisible:false,//编辑框是否可见
+            editValue:{},//编辑框内默认数据
+            editKey:0,
         }
     }
 
@@ -59,6 +63,25 @@ class Site extends Component{
         })
     }
 
+    /**
+     * 编辑框是否可见
+     * @param {*} record 
+     */
+    setEditVisible(record){
+        if(record){
+            this.setState({
+                editVisible:!this.state.editVisible,
+                editValue:record,
+                editKey:this.state.editKey+1
+            })
+        } else {
+            this.setState({
+                editVisible:!this.state.editVisible,
+                editKey:this.state.editKey+1
+            })
+        }
+    }
+
     handleAddVlaue(values){
         addSite(values).then((res)=>{
             if(res.result.code==201){
@@ -68,7 +91,6 @@ class Site extends Component{
             } 
         }).then(
             getSiteByCondition(undefined,undefined,this.state.parentId,1,this.state.pageSize).then((res)=>{
-                console.log(res);
                 this.setState({
                     data:res.result.data,
                     msg:res.result.msg,
@@ -79,7 +101,29 @@ class Site extends Component{
             })
         );
         this.setVisible();
+    }
 
+    handleEditVlaue(values){
+        editSite(Object.assign(values,{siteId:this.state.editValue.siteId,
+            sysSaveName:this.state.editValue.sysSaveName,//系统存储名
+            preSiteName:this.state.editValue.siteName//站点曾经的存储名
+        })).then((res)=>{
+            if(res.result.code==207){
+                message.success(res.result.msg);
+                this.setEditVisible(null);
+                getSiteByCondition(undefined,undefined,this.state.parentId,1,this.state.pageSize).then((res)=>{
+                    this.setState({
+                        data:res.result.data,
+                        msg:res.result.msg,
+                        code:res.result.code,
+                        total:res.result.total,
+                        current:1
+                    })
+                })
+            } else {
+                message.error(res.result.msg);
+            } 
+        })
     }
 
     onFinish = values =>{
@@ -134,7 +178,7 @@ class Site extends Component{
               key: 'action',
               render: (text, record) => (
                 <span>
-                  <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
+                  <a style={{ marginRight: 16 }} onClick={this.setEditVisible.bind(this, record)}>编辑 {record.name}</a>
                 </span>
               ),
             },
@@ -197,6 +241,13 @@ class Site extends Component{
                     visible={this.state.addVisible}
                     handleAddVlaue={this.handleAddVlaue.bind(this)}
                     key={this.state.key}
+                />
+                <EditSiteModal 
+                    visible={this.state.editVisible}
+                    value={this.state.editValue}
+                    setVisible={this.setEditVisible.bind(this)}
+                    key={this.state.editKey}
+                    handleEditVlaue={this.handleEditVlaue.bind(this)}
                 />
             </div>
         )

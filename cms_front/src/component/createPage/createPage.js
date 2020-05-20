@@ -221,11 +221,10 @@ class CreatePage extends Component {
             'cId':id,
             pageFileName:this.state.realName
         }
-        console.log('---value',values)
         uploadPageInfo(obj).then((res)=>{
             if(res.result.code==201){
                 message.success(res.result.msg);
-                getPagesBySysid(values.sysId).then((res)=>{
+                getPagesBySysid(this.state.sysId).then((res)=>{
                     this.setState({
                         sites:res.result.data[0],
                         pages:res.result.data[1],
@@ -366,7 +365,6 @@ class CreatePage extends Component {
                                     value={this.state.realUrl}
                                     name='url'
                                     disabled
-                                    //value={'/'+this.state.savedPageinfo?this.state.savedPageinfo.fileName:undefined}
                                 />
                             </Form.Item>
                             <Form.Item label='存储路径:' >

@@ -16,12 +16,10 @@ class ReUploadModal extends Component {
                 message.success('更新成功！');
                 this.props.reUploadFile(info.file.response.data);
             }
-            
             this.setState({
-                tags:info.file.response.data.tagList,
+                tags:info.file.response.data.tagList.join(';'),
                 filePath:info.file.response.data.filePath
             })
-           
             sessionStorage.setItem('file',JSON.stringify(info.file))
         }
     }
@@ -50,8 +48,9 @@ class ReUploadModal extends Component {
                         <UploadOutlined /> 上传模板
                     </Button>
                 </Upload>
-                标签列表：<Input 
-                    value={this.state.tagList}
+                标签列表：
+                <Input 
+                    value={this.state.tags}
                 />
             </Modal>
         )

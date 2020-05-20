@@ -66,7 +66,7 @@ export default class AddContent extends Component {
 
         return(
             <div>
-                <Form.Item label='内容'  >
+                <Form.Item label='内容' {...this.props.field} >
                     <Select onSelect={this.handContentSelect.bind(this)} value={this.props.editData?this.props.editData:null}>
                         {options}
                     </Select>

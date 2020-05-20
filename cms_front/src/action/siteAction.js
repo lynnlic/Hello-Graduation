@@ -46,3 +46,15 @@ export function getSiteByCondition(sysId,siteName,parentId,currentPage=1, number
         return data;
     })
 }
+
+export function editSite(values){
+    return (myfetch('/site/editSite','POST',JSON.stringify({...values})))
+    .then((res) => {return res.json(); })
+    .then((res) => {
+        const data = {
+            isFetching: false,
+            result:res
+        }
+        return data;
+    })
+}
