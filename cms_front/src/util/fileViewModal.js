@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Input, Modal} from 'antd';
+import {url} from '../constants/config.js';
 
 const { TextArea } = Input;
 
@@ -29,6 +30,7 @@ class FileViewModal extends Component {
 
 
     render(){
+        console.log('----img',this.props.img)
         return (
             <Modal
                 visible={this.props.fileVisible}
@@ -47,7 +49,7 @@ class FileViewModal extends Component {
                     onChange={this.handleEdit.bind(this)}
                 />
                 :
-                <img width='100%' height='100%' src={this.props.img?require('D:\\cms\\data\\bg.jpg'):''} />
+                <img width='100%' height='100%' src={this.props.img?url+'/data/'+this.props.img.split('/').pop():''} />
             }
                 
             </Modal>

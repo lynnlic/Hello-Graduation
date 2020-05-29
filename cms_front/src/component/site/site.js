@@ -19,7 +19,7 @@ class Site extends Component{
         this.state={
             data:[],
             current:1,
-            pageSize:5,
+            pageSize:8,
             total:0,
             addVisible:false,
             key:0,
@@ -106,7 +106,7 @@ class Site extends Component{
     handleEditVlaue(values){
         editSite(Object.assign(values,{siteId:this.state.editValue.siteId,
             sysSaveName:this.state.editValue.sysSaveName,//系统存储名
-            preSiteName:this.state.editValue.siteName//站点曾经的存储名
+            preSiteUrl:this.state.editValue.siteUrl//站点曾经的存储名
         })).then((res)=>{
             if(res.result.code==207){
                 message.success(res.result.msg);

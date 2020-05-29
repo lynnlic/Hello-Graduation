@@ -138,6 +138,7 @@ class Content extends Component{
      */
     handleFileEdit(textValue=''){
         updateContent(textValue, this.state.editContentId,this.state.editPath).then((res)=>{
+            console.log('----',res)
             if(res.result.code===207){
                 message.success(res.result.msg);
                 this.setFileVisible();

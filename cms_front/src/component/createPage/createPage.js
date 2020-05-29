@@ -1,12 +1,13 @@
 import React, { Component, ReactDOM } from '../../../node_modules/react';
 import  {Row, Col, Input, Select, Divider, Tree, Form, Button, message, Modal } from 'antd';
-import { MinusCircleOutlined, PlusOutlined, WarningOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined, WarningOutlined, ExclamationCircleOutlined} from '@ant-design/icons';
 import Navigation from '../../container/navigation.js';
 import {getPagesBySysid} from '../../action/systemAction.js';
 import {transformTreeData} from '../../util/transformData.js';
 import {getTemplateBySysid, getTagsByTemplateId} from '../../action/templateAction.js';
 import {getDataBySiteId} from '../../action/contentAction.js';
 import {uploadPageInfo,createNewPage,getSavedPageInfo, downloadFile, uploadEditPageInfo} from '../../action/createPageAction.js';
+import {deletePage} from '../../action/pageAction.js';
 import AddContent from './addContent.js';
 require('../../common.less');
 require('./createPage.less');
@@ -62,9 +63,9 @@ class CreatePage extends Component {
             datas:[],
             sites:[],
             selectedSys:'',
-            realUrl:'',
-            realPath:'',
-            realSysId:null,
+            realUrl:'',//当前的访问路径
+            realPath:'',//当前的存储路径
+            realSysId:null,//当前选中的系统id
             realSiteId:null,
             realTemplateId:null,
             tags:[],
@@ -171,19 +172,42 @@ class CreatePage extends Component {
             //选中的页面的id
             var selectedId=selectedKeys[0];
             getSavedPageInfo(selectedKeys[0]).then((res)=>{
-                console.log('res',res);
                 this.setState({
                     savedPageinfo:res.result.data,
                     flag:false
                 })
             });
-        } else {
+        } else {//取消选中
             this.setState({
                 savedPageinfo:{},
                 flag:true
             })
         }
-        
+    }
+
+    /**
+     * 右击删除
+     * @param {*} e 
+     */
+    deletePage(e){
+        var pageId=e.node.key;
+        var pagePath=e.node.pagePath;
+        if(e.node.selected){
+            Modal.confirm({
+                title:'确认删除此页面吗？',
+                icon: <ExclamationCircleOutlined />,
+                onOk() {
+                    deletePage(pageId,pagePath).then((res)=>{
+                        if(res.result.code==204){
+                            message.success(res.result.msg);
+                        }
+                    })
+                },
+                onCancel() {
+                    console.log('Cancel');
+                },
+            })
+        }
     }
 
     downloadPages(){
@@ -309,6 +333,7 @@ class CreatePage extends Component {
                             className="createpage_tree"
                             key='pageTree'
                             onSelect={this.handleTreeSelect.bind(this)}
+                            onRightClick={this.deletePage.bind(this)}
                         />
                         <Input type="button" value="生成页面" onClick={this.handleCreatePage.bind(this)}/>
                     </div>
@@ -335,7 +360,7 @@ class CreatePage extends Component {
                                 <Select
                                     onSelect={this.handleSiteSelect.bind(this)}
                                     name='siteId'
-                                    value={this.state.savedPageinfo.siteId?this.state.savedPageinfo.siteId+'':this.state.realSiteId}
+                                    value={this.state.savedPageinfo.siteId?this.state.savedPageinfo.siteId+'':undefined}
                                     disabled={!this.state.flag}
                                 >
                                     {siteOptions}
@@ -344,7 +369,7 @@ class CreatePage extends Component {
                             <Form.Item label='所用模板:'>
                                 <Select 
                                     onSelect={this.handleTemSelect.bind(this)}
-                                    value={this.state.savedPageinfo.templateId?this.state.savedPageinfo.templateId+'':this.state.realTemplateId}
+                                    value={this.state.savedPageinfo.templateId?this.state.savedPageinfo.templateId+'':undefined}
                                     disabled={!this.state.flag}
                                 >
                                 {this.state.templates.map((item)=>{

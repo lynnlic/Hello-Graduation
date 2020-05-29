@@ -27,15 +27,15 @@ export default class AddContent extends Component {
     }
 
     handTagSelect(values,key){
-        console.log('key',key)
+        console.log('key',key, '----values',values)
         this.setState({
             editTags:values
         })
-        if(this.state.contentId==0){
+        /*if(this.state.contentId==0){
             message.error('请先选择内容再选择标签！');
-        }
+        }*/
         var flag=true;
-        if(selectedTags.length!=0){
+        /*if(selectedTags.length!=0){
             for(var tag in selectedTags){
                 if(selectedTags[tag].tagName==values){
                     message.error('请不要重复选择标签！');
@@ -43,7 +43,7 @@ export default class AddContent extends Component {
                     break;                    
                 }
             }
-        }
+        }*/
         if(this.state.contentId!=0&&(selectedTags.length==0||flag)){
             var obj={
                 contentId:this.state.contentId,

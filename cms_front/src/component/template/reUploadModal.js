@@ -35,10 +35,10 @@ class ReUploadModal extends Component {
             <Modal
                 visible={this.props.visible}
                 title='重新上传模板文件'
-                okText="提交"
-                cancelText="取消"
+                okText="关闭"
                 onCancel={this.props.setVisible}
                 onOk={this.props.setVisible}
+                key={this.props.key}
             >
                 模板上传：<Upload 
                     {...props}

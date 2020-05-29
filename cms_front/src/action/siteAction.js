@@ -48,6 +48,7 @@ export function getSiteByCondition(sysId,siteName,parentId,currentPage=1, number
 }
 
 export function editSite(values){
+    
     return (myfetch('/site/editSite','POST',JSON.stringify({...values})))
     .then((res) => {return res.json(); })
     .then((res) => {

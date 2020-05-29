@@ -38,6 +38,7 @@ class Template extends Component{
             editVisible:false,//修改弹框是否可见
             editValue:{},//修改框中默认出现的数据
             editModalKey:0,//修改弹框的key值
+            reuploadKey:0,//重新上传模板弹框的key值
         }
     }
 
@@ -106,7 +107,8 @@ class Template extends Component{
     setUploadVisible(record){
         this.setState({
             uploadVisible:!this.state.uploadVisible,
-            editTemId:record.templateId
+            editTemId:record.templateId,
+            reuploadKey:this.state.reuploadKey+1
         })
     }
 
@@ -176,7 +178,6 @@ class Template extends Component{
     handleEditState(record){
         editState(record.templateId,record.state).then((res)=>{
             if(res.result.code==207){
-                message.success(res.result.msg);
                 getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
                     this.setState({
                         data:res.result.data,
@@ -190,7 +191,6 @@ class Template extends Component{
                 message.error(res.result.msg);
             }
         })
-
     }
 
     loadLoaclFile(path ){
@@ -210,10 +210,8 @@ class Template extends Component{
 
     reUploadFile(fileData){
         editTemFile(this.state.editTemId, fileData).then((res)=>{
-            if(res.result.code==203){
-                message.error(res.result.msg)
-            } else if(res.result.code==200){
-                message.success(res.result.msg)
+            if(res.result.code==207){
+                message.success(res.result.msg);
                 getTemplateByCondition(this.state.searchSysId,this.state.searchTemplateName,this.state.searchState,this.state.parentId,1,this.state.pageSize).then((res)=>{
                     this.setState({
                         data:res.result.data,
@@ -223,6 +221,8 @@ class Template extends Component{
                         current:1
                     })
                 })
+            } else if(res.result.code==200){
+                message.error(res.result.msg)
             }
         })
     }
@@ -394,6 +394,7 @@ class Template extends Component{
                     visible={this.state.uploadVisible}
                     reUploadFile={this.reUploadFile.bind(this)}
                     setVisible={this.setUploadVisible.bind(this)}
+                    key={this.state.reuploadKey}
                 />
                 <EditTemplateModal 
                     visible={this.state.editVisible}

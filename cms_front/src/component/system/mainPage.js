@@ -123,7 +123,7 @@ class MainPage extends Component {
 
     handleAdd(values, path){
         var creatorId=JSON.parse(sessionStorage.getItem('user')).id;
-        addSystem(values,path,this.creatorId)
+        addSystem(values,path,creatorId)
         .then((res)=>{
             if(res.result.code===201){
                 message.success(res.result.msg);

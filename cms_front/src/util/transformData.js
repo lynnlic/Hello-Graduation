@@ -13,7 +13,8 @@ export function transformTreeData(sites,pages){
             siteTree[position].children.push({
                 title:page.pageName,
                 key:page.pageId,
-                state:page.state
+                state:page.state,
+                pagePath:page.pagePath
                 //icon:page.state!=1?<img src='../images/dot.png'/>:''
             })
         }        

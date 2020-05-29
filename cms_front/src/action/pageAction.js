@@ -11,10 +11,11 @@ import { myfetch } from '../util/myfetch';
  * @param {*} currentPage 当前页码 
  * @param {*} number 每页条数
  */
-export function getPagesByCondition(name, sysId, currentPage=1, number=5){
+export function getPagesByCondition(name, sysId, parentId, currentPage=1, number=5){
     const obj={
         name:name===""?undefined:name,
         sysId:sysId,
+        parentId:parentId,
         currentPage:currentPage,
         number:number
     }

@@ -77,23 +77,22 @@ export function uploadEditPageInfo(pageId,selectedTags=[]){
 
 export function downloadFile(sysName){
     var obj={
-        sysName:"apple"
+        sysName:sysName
     }
     return(myfetch('/page/downloadFile', 'POST',JSON.stringify(obj)))
-    .then((response) => {
-        console.log('response',response)
+    .then((response) => {//包含请求头等信息
+        //blob（）：读取 Response 对象并且将它设置为已读，返回Promise对象
         response.blob().then(blob => {
-            console.log('blob',blob)
-        const aLink = document.createElement('a');
-        document.body.appendChild(aLink);
-        aLink.style.display='none';
-        const objectUrl = window.URL.createObjectURL(blob);
-        aLink.href = objectUrl;
-        aLink.download = sysName;
-        aLink.click();
-        document.body.removeChild(aLink);
-        sessionStorage.setItem('downloadResult',JSON.stringify(response.status))
-      });
+            const aLink = document.createElement('a');
+            document.body.appendChild(aLink);
+            aLink.style.display='none';
+            const objectUrl = window.URL.createObjectURL(blob);
+            aLink.href = objectUrl;
+            aLink.download = sysName;//触发a标签的下载属性
+            aLink.click();
+            document.body.removeChild(aLink);
+            sessionStorage.setItem('downloadResult',JSON.stringify(response.status))
+        });
     }).catch((error) => {
       console.log('文件下载失败', error);
       sessionStorage.setItem('downloadResult',JSON.stringify(206))

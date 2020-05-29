@@ -22,12 +22,13 @@ class Page extends Component{
             pageSize:5,
             total:0,
             searchPageName:undefined,
-            searchSysId:undefined
+            searchSysId:undefined,
+            parentId:JSON.parse(sessionStorage.getItem('user')).parent
         }
     }
 
     componentDidMount(){
-        getPagesByCondition(undefined,undefined,this.state.current,this.state.pageSize).then((res)=>{
+        getPagesByCondition(undefined,undefined,this.state.parentId,this.state.current,this.state.pageSize).then((res)=>{
             this.setState({
                 data:res.result.data,
                 msg:res.result.msg,
@@ -68,11 +69,6 @@ class Page extends Component{
         document.getElementsByClassName("ant-menu-item")[6].classList.add("ant-menu-item-selected");
         document.getElementsByClassName("ant-menu-item")[0].classList.add("ant-menu-item-selected");
         document.getElementsByClassName("ant-menu-item")[5].classList.remove("ant-menu-item-selected");
-    }
-
-    loadLoaclFile(pagePath){
-        console.log('..',pagePath)
-
     }
 
     deletePage(pageId,pagePath){
@@ -157,9 +153,7 @@ class Page extends Component{
               key: 'action',
               render: (text, record) => (
                 <span>
-                  <a style={{ marginRight: 16 }}>编辑 {record.name}</a>
                   <a onClick={this.deletePage.bind(this,record.pageId,record.pagePath)}>删除页面 </a>
-                  <a  onClick={this.loadLoaclFile.bind(this,record.pageId,record.pagePath)}>查看页面</a>
                 </span>
               ),
             },

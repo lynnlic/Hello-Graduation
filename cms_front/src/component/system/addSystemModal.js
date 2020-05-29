@@ -55,8 +55,7 @@ class AddSystemModal extends Component {
 
     handleValue(){
         this.formRef.current.validateFields().then((values)=>{
-            console.log('add',values)
-            //this.props.handleAddVlaue(values,this.state.path);
+            this.props.handleAddVlaue(values,this.state.path);
         })
     }
 
